@@ -25,6 +25,7 @@
  * @brief       Interface definition for the QMA6100P accelerometer driver.
  *
  * @author      Baptiste Le Duc <baptiste.leduc@etik.com>
+ * @author      Léandre Le Duc <leandre.leduc38@gmail.com>
  */
 
 #include <stdint.h>
@@ -92,37 +93,6 @@ typedef enum {
     QMA6100P_MODE_ACTIVE = 1,       /**< Processes the interrupts and send data to results registers */
     QMA6100P_MODE_ULPS = 2,         /**< Ultra-Low Power State */
 } qma6100p_mode_t;
-/**
- * @brief   INT pin active level
- */
-typedef enum {
-    QMA6100P_INT_PIN_ACTIVE_HIGH = 0, /**< INT pin active HIGH on interrupt */
-    QMA6100P_INT_PIN_ACTIVE_LOW = 1,  /**< INT pin active LOW on interrupt */
-} qma6100p_int_pin_active_level_t;
-
-/**
- * @brief   INT pin output mode
- */
-typedef enum {
-    QMA6100P_INT_PIN_PUSH_PULL = 0,  /**< INT pin configured as push-pull */
-    QMA6100P_INT_PIN_OPEN_DRAIN = 1, /**< INT pin configured as open drain */
-} qma6100p_int_pin_mode_t;
-
-/**
- * @brief   INT latch mode
- */
-typedef enum {
-    QMA6100P_INT_NON_LATCH = 0, /**< INT pulse clears automatically */
-    QMA6100P_INT_LATCH = 1,     /**< INT held until acknowledged via @ref qma6100p_ack_int */
-} qma6100p_int_latch_t;
-
-/**
- * @brief   INT status clear behavior
- */
-typedef enum {
-    QMA6100P_INT_CLR_ON_ANY_READ = 0, /**< INT_STATUS bits cleared on any read */
-    QMA6100P_INT_CLR_ON_LATCH = 1,    /**< INT_STATUS bits cleared only if latched */
-} qma6100p_int_clear_t;
 
 /**
  * @brief   QMA6100P interrupt callback
@@ -130,14 +100,24 @@ typedef enum {
 typedef void (*qma6100p_int_cb_t)(void *);
 
 /**
+ * @name    Interrupt pin number selection
+ * @{
+ */
+#define QMA6100P_INT1 (1) /**< Use INT1 pin for interrupt output */
+#define QMA6100P_INT2 (2) /**< Use INT2 pin for interrupt output */
+/** @} */
+
+/**
  * @brief   Interrupt configuration parameters
  */
 typedef struct {
-    gpio_t interrupt_pin;                             /**< GPIO connected to INT pin */
-    qma6100p_int_pin_active_level_t active_level_int; /**< active level of INT pin */
-    qma6100p_int_pin_mode_t pin_mode_int;             /**< push-pull or open drain for INT */
-    qma6100p_int_latch_t interrupt_latch;             /**< interrupt pulse behavior of INT */
-    qma6100p_int_clear_t interrupt_clear_behavior;    /**< interrupt status clear behavior */
+    gpio_t interrupt_pin;             /**< MCU GPIO connected to the QMA6100P INT pin */
+    uint8_t active_level_int;         /**< active level of INT pin: @ref QMA6100P_INTPIN_ACTIVE_HIGH or @ref QMA6100P_INTPIN_ACTIVE_LOW */
+    uint8_t pin_mode_int;             /**< INT pin output mode: @ref QMA6100P_INTPIN_PUSH_PULL or @ref QMA6100P_INTPIN_OPEN_DRAIN */
+    uint8_t interrupt_latch;          /**< latch mode: @ref QMA6100P_INT_CFG_NON_LATCH or @ref QMA6100P_INT_CFG_LATCH */
+    uint8_t interrupt_clear_behavior; /**< status clear mode: @ref QMA6100P_INT_CFG_CLR_ON_ANY_READ or @ref QMA6100P_INT_CFG_CLR_ON_LATCH */
+    uint8_t interrupt_shadow;         /**< shadow mode: @ref QMA6100P_INT_CFG_SHADOW_DIS or @ref QMA6100P_INT_CFG_SHADOW_EN */
+    uint8_t interrupt_pin_num;        /**< QMA6100P INT pin routed on the board: @ref QMA6100P_INT1 or @ref QMA6100P_INT2 */
 } qma6100p_int_params_t;
 
 /**
@@ -154,7 +134,7 @@ typedef struct {
  */
 typedef struct {
     i2c_t i2c;              /**< I2C bus the device is connected to */
-    uint8_t addr;           /**< I2C address (@ref QMA6100P_I2C_ADDR_AD0_LOW or _HIGH) */
+    uint8_t addr;           /**< I2C address (@ref QMA6100P_I2C_ADDR_LOW or _HIGH) */
     qma6100p_odr_t rate;    /**< output data rate */
     qma6100p_range_t range; /**< full-scale range */
     uint8_t offset[3];      /**< user offset correction for X, Y, Z [applied at init] */
@@ -165,7 +145,8 @@ typedef struct {
  * @brief   Device descriptor for QMA6100P accelerometer
  */
 typedef struct {
-    qma6100p_params_t params; /**< device configuration parameters */
+    qma6100p_params_t params; /**< Device configuration parameters */
+    qma6100p_int_t interrupt; /**< Device interrupt descriptor */
 } qma6100p_t;
 
 /**
@@ -249,16 +230,21 @@ void qma6100p_read(const qma6100p_t *dev, qma6100p_data_t *data);
 /**
  * @brief   Configure data-ready interrupt
  *
- * @param[in]  dev          device descriptor of accelerometer
- * @param[in]  int_params   interrupt configuration parameters
- * @param[in]  cb           callback invoked on interrupt
- * @param[in]  arg          argument passed to callback
+ * Writes INTPIN_CONF, INT1/2_MAP1, and INT_EN1 registers to route the
+ * data-ready event to the selected INT pin, then arms the MCU GPIO ISR.
+ * The callback is invoked from interrupt context — keep it short.
  *
- * @return                  QMA6100P_OK on success
- * @return                  QMA6100P_GPIO_ERROR if GPIO initialization failed
+ * @param[in,out] dev        device descriptor of accelerometer
+ * @param[in]     interrupt  interrupt descriptor (@ref qma6100p_int_t): pin,
+ *                           polarity, output mode, latch, routing, callback
+ *
+ * @return                   QMA6100P_OK on success
+ * @return                   QMA6100P_GPIO_ERROR if GPIO initialization failed
+ * @return                   QMA6100P_INVALID_ARG if interrupt_pin_num is invalid
+ * @return                   QMA6100P_NOI2C if I2C transaction failed
+ * @return                   QMA6100P_NODEV if device not found on bus
  */
-int qma6100p_set_int(const qma6100p_t *dev, const qma6100p_int_params_t *int_params,
-                     qma6100p_int_cb_t cb, void *arg);
+int qma6100p_set_data_ready_int(qma6100p_t *dev, const qma6100p_int_t *interrupt);
 
 /**
  * @brief   Acknowledge interrupt
