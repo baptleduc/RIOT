@@ -232,6 +232,21 @@ out:
     return res;
 }
 
+static int _qma6100p_set_range(qma6100p_t *dev, qma6100p_range_t range)
+{
+    int res;
+    uint8_t range_reg;
+
+    res = _read_reg(BUS, ADDR, QMA6100P_REG_RANGE, &range_reg);
+    if (res < 0) {
+        return res;
+    }
+
+    FIELD_SET(QMA6100P_RANGE_MASK, range, range_reg);
+    res = _write_reg(BUS, ADDR, QMA6100P_REG_RANGE, range_reg);
+    return res;
+}
+
 int qma6100p_init(qma6100p_t *dev, const qma6100p_params_t *params)
 {
     assert(dev && params);
@@ -246,6 +261,11 @@ int qma6100p_init(qma6100p_t *dev, const qma6100p_params_t *params)
 
     //TODO: We should then set the required user params
     res = qma6100p_set_mode(dev, params->mode);
+    if (res < 0) {
+        return res;
+    }
+
+    res = _qma6100p_set_range(dev, params->range);
     if (res < 0) {
         return res;
     }
