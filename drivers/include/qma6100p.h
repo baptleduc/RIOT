@@ -249,13 +249,6 @@ int qma6100p_init(qma6100p_t *dev, const qma6100p_params_t *params);
 int qma6100p_set_mode(qma6100p_t *dev, qma6100p_mode_t mode);
 
 /**
- * @brief   Set standby mode
- *
- * @param[in]  dev          device descriptor of accelerometer
- */
-void qma6100p_set_standby(const qma6100p_t *dev);
-
-/**
  * @brief   Check for new set of measurement data
  *
  * @param[in]  dev          device descriptor of accelerometer
