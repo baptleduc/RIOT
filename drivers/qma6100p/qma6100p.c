@@ -16,11 +16,14 @@
  */
 
 #include <assert.h>
+#include <stdint.h>
 
 #include "periph/gpio.h"
 #include "periph/i2c.h"
+#include "qma6100p.h"
 #include "qma6100p_params.h"
 #include "qma6100p_regs.h"
+#include "ztimer.h"
 
 #define ENABLE_DEBUG 1
 #include "debug.h"
@@ -143,6 +146,92 @@ out:
     return res;
 }
 
+static int _soft_reset(const qma6100p_t *dev)
+{
+    int res;
+    i2c_acquire(BUS);
+
+    res = _write_reg(BUS, ADDR, QMA6100P_REG_SW_RESET, QMA6100P_SW_RESET_VAL);
+    if (res < 0) {
+        DEBUG("[qma6100p] soft_reset - error: failed to write SW_RESET register\n");
+        goto out;
+    }
+
+    ztimer_sleep(ZTIMER_MSEC, 1);
+
+    res = _write_reg(BUS, ADDR, QMA6100P_REG_SW_RESET, 0x00);
+    if (res < 0) {
+        DEBUG("[qma6100p] soft_reset - error: failed to write SW_RESET register\n");
+        goto out;
+    }
+
+    uint8_t nvm_status;
+
+    /* Wait for OTP to load */
+    do {
+        res = _read_reg(BUS, ADDR, QMA6100P_REG_NVM, &nvm_status);
+        if (res < 0) {
+            DEBUG("[qma6100p] soft_reset - error: failed read NVM register.\n");
+            goto out;
+        }
+    } while ((nvm_status & 0x05) != 0x05);
+
+out:
+    i2c_release(BUS);
+    return res;
+}
+
+static int _qma6100p_run_init_seq(qma6100p_t *dev)
+{
+    int res;
+
+    /* Initial sequence as described in 6.3 */
+    uint8_t chip_state;
+    do {
+        res = _soft_reset(dev);
+        if (res < 0) {
+            return res;
+        }
+        i2c_acquire(BUS);
+        res = _read_reg(BUS, ADDR, QMA6100P_REG_CHIP_STATE, &chip_state);
+        if (res < 0) {
+            goto out;
+        }
+    } while ((chip_state >> 4) != 0x0C);
+
+    res = _write_reg(BUS, ADDR, QMA6100P_REG_PM, 0x80);
+    if (res < 0) {
+        goto out;
+    }
+
+    res = _write_reg(BUS, ADDR, QMA6100P_REG_PM, 0x84);
+    if (res < 0) {
+        goto out;
+    }
+
+    res = _write_reg(BUS, ADDR, QMA6100P_REG_TST0_ANA, 0x20);
+    if (res < 0) {
+        goto out;
+    }
+
+    res = _write_reg(BUS, ADDR, QMA6100P_REG_AFE_ANA, 0x01);
+    if (res < 0) {
+        goto out;
+    }
+
+    res = _write_reg(BUS, ADDR, QMA6100P_REG_TST1_ANA, 0x80);
+    if (res < 0) {
+        goto out;
+    }
+
+    ztimer_sleep(ZTIMER_MSEC, 1);
+    res = _write_reg(BUS, ADDR, QMA6100P_REG_TST1_ANA, 0x00);
+
+out:
+    i2c_release(BUS);
+    return res;
+}
+
 int qma6100p_init(qma6100p_t *dev, const qma6100p_params_t *params)
 {
     assert(dev && params);
@@ -151,12 +240,11 @@ int qma6100p_init(qma6100p_t *dev, const qma6100p_params_t *params)
     DEBUG("[qma6100p] init - i2c=%d, addr=0x%02x\n", params->i2c, params->addr);
 
     int res = _qma6100p_init_test(params->i2c, params->addr);
-    if (res < 0) {
-        return res;
-    }
-
     dev->params = *params;
 
+    _qma6100p_run_init_seq(dev);
+
+    //TODO: We should then set the required user params
     res = qma6100p_set_mode(dev, params->mode);
     if (res < 0) {
         return res;
