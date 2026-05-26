@@ -335,6 +335,46 @@ int qma6100p_init(qma6100p_t *dev, const qma6100p_params_t *params)
     return QMA6100P_OK;
 }
 
+static inline int16_t _to_signed14(uint8_t lsb, uint8_t msb)
+{
+    uint16_t raw = (uint16_t)msb << 8 | lsb;
+    return (int16_t)((int16_t)raw >> 2);
+}
+
+int qma6100p_read_raw(const qma6100p_t *dev, qma6100p_raw_data_t *data)
+{
+    assert(dev && data);
+
+    int res;
+    uint8_t buf[6];
+    uint8_t new_data;
+
+    i2c_acquire(BUS);
+
+    res = i2c_read_regs(BUS, ADDR, QMA6100P_REG_DX_LSB, buf, 6, 0);
+    if (res < 0) {
+        goto out;
+    }
+
+    new_data =
+        (buf[0] | buf[2] | buf[4]) & QMA6100P_NEWDATA_FLAG_MASK;
+
+    if (!new_data) {
+        res = QMA6100P_NODATA;
+        goto out;
+    }
+
+    res = QMA6100P_DATA_READY;
+
+    data->x = _to_signed14(buf[0], buf[1]);
+    data->y = _to_signed14(buf[2], buf[3]);
+    data->z = _to_signed14(buf[4], buf[5]);
+
+out:
+    i2c_release(BUS);
+    return res;
+}
+
 /**
  * TODO: Implement this
  *
