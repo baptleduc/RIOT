@@ -266,8 +266,11 @@ int qma6100p_read_raw(const qma6100p_t *dev, qma6100p_raw_data_t *data);
  *
  * @param[in]  dev          device descriptor of accelerometer
  * @param[out] data         acceleration in g per axis
+ *
+ *
+ * @return                  QMA6100P_NODATA if nothing has changed and keep data unchanged.
  */
-void qma6100p_read(const qma6100p_t *dev, qma6100p_data_t *data);
+int qma6100p_read(const qma6100p_t *dev, qma6100p_data_t *data);
 /**
  * @brief   Configure data-ready interrupt
  *

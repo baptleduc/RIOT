@@ -375,6 +375,58 @@ out:
     return res;
 }
 
+static float _convert_to_g(int16_t raw_value, qma6100p_range_t range)
+{
+    float resolution = QMA6100P_2G_RESOLUTION;
+
+    switch (range) {
+    case (QMA6100P_RANGE_2G): {
+        resolution = QMA6100P_2G_RESOLUTION;
+        break;
+    }
+
+    case (QMA6100P_RANGE_4G): {
+        resolution = QMA6100P_4G_RESOLUTION;
+        break;
+    }
+
+    case (QMA6100P_RANGE_8G): {
+        resolution = QMA6100P_8G_RESOLUTION;
+        break;
+    }
+
+    case (QMA6100P_RANGE_16G): {
+        resolution = QMA6100P_16G_RESOLUTION;
+        break;
+    }
+
+    case (QMA6100P_RANGE_32G): {
+        resolution = QMA6100P_32G_RESOLUTION;
+        break;
+    }
+    }
+    return (float)raw_value * resolution;
+}
+
+int qma6100p_read(const qma6100p_t *dev, qma6100p_data_t *data)
+{
+    assert(dev && data);
+
+    int res;
+    qma6100p_raw_data_t raw_data;
+
+    res = qma6100p_read_raw(dev, &raw_data);
+    if (res < 0) {
+        return res;
+    }
+
+    data->x = _convert_to_g(raw_data.x, dev->params.range);
+    data->y = _convert_to_g(raw_data.y, dev->params.range);
+    data->z = _convert_to_g(raw_data.z, dev->params.range);
+
+    return res;
+}
+
 /**
  * TODO: Implement this
  *
