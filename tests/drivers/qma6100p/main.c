@@ -15,6 +15,7 @@
  * @}
  */
 
+#include <inttypes.h>
 #include <stdio.h>
 
 #include "board.h"
@@ -29,6 +30,9 @@ static qma6100p_t dev;
 
 int main(void)
 {
+    qma6100p_data_t data;
+    int res;
+
 #ifdef T1000E_3V3_ACC_EN_PIN
     gpio_init(T1000E_3V3_ACC_EN_PIN, GPIO_OUT);
     gpio_set(T1000E_3V3_ACC_EN_PIN);
@@ -40,12 +44,22 @@ int main(void)
     printf("Initializing QMA6100P at I2C_DEV(%d)... ",
            (int)qma6100p_params[0].i2c);
 
-    if (qma6100p_init(&dev, &qma6100p_params[0]) == QMA6100P_OK) {
-        puts("[OK]\n");
+    res = qma6100p_init(&dev, &qma6100p_params[0]);
+    if (res < 0) {
+        printf("Init FAILED: %d \n", res);
+        return 1;
     }
-    else {
-        puts("[FAILED]");
-        return -1;
+    puts("[OK]\n");
+
+    for (;;) {
+        res = qma6100p_read(&dev, &data);
+        if (res == QMA6100P_DATA_READY) {
+            printf("X: %" PRId32 " ug, Y: %" PRId32 " ug, Z: %" PRId32 " ug\n",
+                   data.x, data.y, data.z);
+        }
+        else if (res == QMA6100P_NODATA) {
+            printf("No new data\n");
+        }
+        ztimer_sleep(ZTIMER_MSEC, 100);
     }
-    return 0;
 }
