@@ -149,12 +149,11 @@ out:
 static int _soft_reset(const qma6100p_t *dev)
 {
     int res;
-    i2c_acquire(BUS);
 
     res = _write_reg(BUS, ADDR, QMA6100P_REG_SW_RESET, QMA6100P_SW_RESET_VAL);
     if (res < 0) {
         DEBUG("[qma6100p] soft_reset - error: failed to write SW_RESET register\n");
-        goto out;
+        return res;
     }
 
     ztimer_sleep(ZTIMER_MSEC, 1);
@@ -162,7 +161,7 @@ static int _soft_reset(const qma6100p_t *dev)
     res = _write_reg(BUS, ADDR, QMA6100P_REG_SW_RESET, 0x00);
     if (res < 0) {
         DEBUG("[qma6100p] soft_reset - error: failed to write SW_RESET register\n");
-        goto out;
+        return res;
     }
 
     uint8_t nvm_status;
@@ -172,12 +171,10 @@ static int _soft_reset(const qma6100p_t *dev)
         res = _read_reg(BUS, ADDR, QMA6100P_REG_NVM, &nvm_status);
         if (res < 0) {
             DEBUG("[qma6100p] soft_reset - error: failed read NVM register.\n");
-            goto out;
+            return res;
         }
     } while ((nvm_status & 0x05) != 0x05);
 
-out:
-    i2c_release(BUS);
     return res;
 }
 
@@ -185,14 +182,15 @@ static int _qma6100p_run_init_seq(qma6100p_t *dev)
 {
     int res;
 
+    i2c_acquire(BUS);
+
     /* Initial sequence as described in 6.3 */
     uint8_t chip_state;
     do {
         res = _soft_reset(dev);
         if (res < 0) {
-            return res;
+            goto out;
         }
-        i2c_acquire(BUS);
         res = _read_reg(BUS, ADDR, QMA6100P_REG_CHIP_STATE, &chip_state);
         if (res < 0) {
             goto out;
@@ -237,13 +235,18 @@ static int _qma6100p_set_range(qma6100p_t *dev, qma6100p_range_t range)
     int res;
     uint8_t range_reg;
 
+    i2c_acquire(BUS);
+
     res = _read_reg(BUS, ADDR, QMA6100P_REG_RANGE, &range_reg);
     if (res < 0) {
-        return res;
+        goto out;
     }
 
     FIELD_SET(QMA6100P_RANGE_MASK, range, range_reg);
     res = _write_reg(BUS, ADDR, QMA6100P_REG_RANGE, range_reg);
+
+out:
+    i2c_release(BUS);
     return res;
 }
 
@@ -252,12 +255,19 @@ static int _qma6100p_set_odr(qma6100p_t *dev, qma6100p_odr_t odr)
     int res;
     uint8_t odr_reg;
 
+    i2c_acquire(BUS);
+
     res = _read_reg(BUS, ADDR, QMA6100P_REG_ODR, &odr_reg);
     if (res < 0) {
-        return res;
+        DEBUG("[qma6100p] odr - error: failed read odr register.\n");
+        goto out;
     }
+
     FIELD_SET(QMA6100P_ODR_MASK, odr, odr_reg);
     res = _write_reg(BUS, ADDR, QMA6100P_REG_ODR, odr_reg);
+
+out:
+    i2c_release(BUS);
     return res;
 }
 
@@ -269,11 +279,18 @@ int qma6100p_init(qma6100p_t *dev, const qma6100p_params_t *params)
     DEBUG("[qma6100p] init - i2c=%d, addr=0x%02x\n", params->i2c, params->addr);
 
     int res = _qma6100p_init_test(params->i2c, params->addr);
+    if (res < 0) {
+        return res;
+    }
     dev->params = *params;
 
-    _qma6100p_run_init_seq(dev);
+    res = _qma6100p_run_init_seq(dev);
+    if (res < 0) {
+        return res;
+    }
 
-    //TODO: We should then set the required user params
+    DEBUG("[qma6100p] init sequence: successful ");
+
     res = qma6100p_set_mode(dev, params->mode);
     if (res < 0) {
         return res;
