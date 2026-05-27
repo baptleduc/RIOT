@@ -232,9 +232,9 @@ static int _set_int_params(qma6100p_t *dev, qma6100p_int_params_t int_params)
 
     READ_REG(QMA6100P_REG_INT_CFG, int_reg, out);
 
-    FIELD_SET(int_reg, QMA6100P_INT_CFG_CLR_MASK, int_params.interrupt_clear_behavior, QMA6100P_INT_CFG_CLR_SHIFT);
-    FIELD_SET(int_reg, QMA6100P_INT_CFG_LATCH_MASK, int_params.interrupt_latch, QMA6100P_INT_CFG_LATCH_SHIFT);
-    FIELD_SET(int_reg, QMA6100P_INT_CFG_SHADOW_MASK, int_params.interrupt_shadow, QMA6100P_INT_CFG_SHADOW_SHIFT);
+    FIELD_SET(QMA6100P_INT_CFG_CLR_MASK, int_params.interrupt_clear_behavior, int_reg);
+    FIELD_SET(QMA6100P_INT_CFG_LATCH_MASK, int_params.interrupt_latch, int_reg);
+    FIELD_SET(QMA6100P_INT_CFG_SHADOW_MASK, int_params.interrupt_shadow, int_reg);
 
     WRITE_REG(QMA6100P_REG_INT_CFG, int_reg, out);
 
@@ -254,7 +254,7 @@ out:
  */
 static inline int qma6100p_enter_active_mode(const qma6100p_t *dev, uint8_t pm)
 {
-    FIELD_SET(pm, QMA6100P_PM_MODE_MASK, 1, QMA6100P_PM_MODE_SHIFT);
+    FIELD_SET(QMA6100P_PM_MODE_MASK, 1, pm);
     return _write_reg(BUS, ADDR, QMA6100P_REG_PM, pm);
 }
 
@@ -328,13 +328,13 @@ static int _set_intpin_conf(const qma6100p_t *dev,
     switch (params->interrupt_pin_num) {
     case QMA6100P_INT1:
         *map_reg = QMA6100P_REG_INT1_MAP1;
-        FIELD_SET(reg, QMA6100P_INTPIN_INT1_LVL, params->active_level_int, 0);
-        FIELD_SET(reg, QMA6100P_INTPIN_INT1_OD, params->pin_mode_int, 1);
+        FIELD_SET(QMA6100P_INTPIN_INT1_LVL, params->active_level_int, reg);
+        FIELD_SET(QMA6100P_INTPIN_INT1_OD, params->pin_mode_int, reg);
         break;
     case QMA6100P_INT2:
         *map_reg = QMA6100P_REG_INT2_MAP1;
-        FIELD_SET(reg, QMA6100P_INTPIN_INT2_LVL, params->active_level_int, 2);
-        FIELD_SET(reg, QMA6100P_INTPIN_INT2_OD, params->pin_mode_int, 3);
+        FIELD_SET(QMA6100P_INTPIN_INT2_LVL, params->active_level_int, reg);
+        FIELD_SET(QMA6100P_INTPIN_INT2_OD, params->pin_mode_int, reg);
         break;
     default:
         res = QMA6100P_INVALID_ARG;

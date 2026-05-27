@@ -99,7 +99,6 @@ extern "C" {
  * @{
  */
 #define QMA6100P_ODR_MASK                GENMASK(4, 0) /**< ODR bits[4:0] mask */
-#define QMA6100P_NLPF_SHIFT              (5)           /**< NLPF field shift */
 #define QMA6100P_NLPF_MASK               GENMASK(7, 5) /**< NLPF bits[7:5] mask */
 /* NLPF when RANGE[LPF_HPF]=0 (LPF mode): 000=off, 100=1, x01=2, x10=4, x11=8 */
 /* NLPF when RANGE[LPF_HPF]=1 (HPF mode): 000=off, 001=ODR/10, 010=ODR/25, etc. */
@@ -110,8 +109,7 @@ extern "C" {
  * Default 0x00 after POR — device is in standby. Write MODE=1 to activate.
  * @{
  */
-#define QMA6100P_PM_MODE_SHIFT           (7)                         /**< shift for mode bit */
-#define QMA6100P_PM_MODE_MASK            BIT(QMA6100P_PM_MODE_SHIFT) /**< mask for mode bit */
+#define QMA6100P_PM_MODE_MASK            BIT(7) /**< active/standby mode bit mask */
 /* bit6 RESERVED */
 #define QMA6100P_PM_SINC_SHIFT           (4)                              /**< shift for T_RSTB_SINC[1:0] */
 #define QMA6100P_PM_SINC_MASK            GENMASK(5, 4)                    /**< mask for T_RSTB_SINC[1:0] */
@@ -163,8 +161,7 @@ extern "C" {
  * @name   INT status clear behavior
  * @{
  */
-#define QMA6100P_INT_CFG_CLR_SHIFT       (7)
-#define QMA6100P_INT_CFG_CLR_MASK        (BIT(QMA6100P_INT_CFG_CLR_SHIFT))
+#define QMA6100P_INT_CFG_CLR_MASK        BIT(7) /**< INT_STATUS clear behavior bit mask */
 #define QMA6100P_INT_CFG_CLR_ON_LATCH    (0) /**< INT_STATUS bits cleared only if latched */
 #define QMA6100P_INT_CFG_CLR_ON_ANY_READ (1) /**< INT_STATUS bits cleared on any read */
 /** @} */
@@ -173,8 +170,7 @@ extern "C" {
  * @name   INT latch mode
  * @{
  */
-#define QMA6100P_INT_CFG_LATCH_SHIFT     (0)
-#define QMA6100P_INT_CFG_LATCH_MASK      (BIT(QMA6100P_INT_CFG_LATCH_SHIFT))
+#define QMA6100P_INT_CFG_LATCH_MASK      BIT(0) /**< INT latch mode bit mask */
 #define QMA6100P_INT_CFG_NON_LATCH       (0) /**< INT pulse clears automatically */
 #define QMA6100P_INT_CFG_LATCH           (1) /**< INT held until ack via @ref qma6100p_ack_int */
 /** @} */
@@ -184,8 +180,7 @@ extern "C" {
  * @{
  */
 
-#define QMA6100P_INT_CFG_SHADOW_SHIFT    (6)                                /**< bit position of shadow disable bit */
-#define QMA6100P_INT_CFG_SHADOW_MASK     BIT(QMA6100P_INT_CFG_SHADOW_SHIFT) /**< shadow disable bit mask */
+#define QMA6100P_INT_CFG_SHADOW_MASK     BIT(6) /**< data shadowing disable bit mask */
 #define QMA6100P_INT_CFG_SHADOW_EN       (0)                                /**< shadowing enabled (default) */
 #define QMA6100P_INT_CFG_SHADOW_DIS      (1)                                /**< shadowing disabled */
 /** @} */
