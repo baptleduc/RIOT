@@ -21,7 +21,6 @@
 #include "periph/i2c.h"
 #include "qma6100p_params.h"
 #include "qma6100p_regs.h"
-#include "ztimer.h"
 
 #define ENABLE_DEBUG 1
 #include "debug.h"
@@ -35,8 +34,8 @@
 /**
  * @brief   Read a register and jump to a label on failure.
  *
- * @warning res must be a declared `int` variable in the calling scope.
- * @warning out_label must be a declared label in the calling scope.
+ * @warning Requires in calling scope: `int res`, label `out_label`, macros `BUS` and `ADDR`.
+ *          On failure, `res` holds the error code and execution jumps to `out_label`.
 */
 #define READ_REG(reg_addr, reg_val, out_label)                                     \
     do {                                                                           \
@@ -48,10 +47,10 @@
     } while (0)
 
 /**
- * @brief   Read a register and jump to a label on failure.
+ * @brief   Write a register and jump to a label on failure.
  *
- * @warning res must be a declared `int` variable in the calling scope.
- * @warning out_label must be a declared label in the calling scope.
+ * @warning Requires in calling scope: `int res`, label `out_label`, macros `BUS` and `ADDR`.
+ *          On failure, `res` holds the error code and execution jumps to `out_label`.
 */
 #define WRITE_REG(reg_addr, reg_val, out_label)                                     \
     do {                                                                            \
@@ -197,7 +196,7 @@ static int _disable_set_interrupt(const qma6100p_t *dev)
  */
 static int _enter_ulps_mode(const qma6100p_t *dev)
 {
-    int res;
+    int res = QMA6100P_OK;
 
     WRITE_REG(QMA6100P_REG_PM, 0x87, out);
     WRITE_REG(QMA6100P_REG_ULPS, 0x0F, out);
@@ -206,6 +205,7 @@ static int _enter_ulps_mode(const qma6100p_t *dev)
     res = _disable_set_interrupt(dev);
     if (res < 0) {
         DEBUG("[qma6100p] %s: failed to disable interrupt\n", __func__);
+        goto out;
     }
 
 out:
@@ -222,13 +222,13 @@ out:
  *
  * @return  0 on success
  * @return  negative error code on I2C failure
+ *
+ * @warning I2C bus must be acquired by the caller
  */
 static int _set_int_params(qma6100p_t *dev, qma6100p_int_params_t int_params)
 {
-    int res;
+    int res = QMA6100P_OK;
     uint8_t int_reg;
-
-    i2c_acquire(BUS);
 
     READ_REG(QMA6100P_REG_INT_CFG, int_reg, out);
 
@@ -239,7 +239,6 @@ static int _set_int_params(qma6100p_t *dev, qma6100p_int_params_t int_params)
     WRITE_REG(QMA6100P_REG_INT_CFG, int_reg, out);
 
 out:
-    i2c_release(BUS);
     return res;
 }
 
