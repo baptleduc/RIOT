@@ -20,11 +20,22 @@
 extern "C" {
 #endif
 
-#define BIT(n)                 (1UL << (n))                              /**< single-bit mask at position n */
-#define GENMASK(h, l)          (((1UL << ((h) - (l) + 1)) - 1) << (l))  /**< contiguous bitmask from bit l to bit h */
+#define BIT(n)                 (1UL << (n))                            /**< single-bit mask at position n */
+#define GENMASK(h, l)          (((1UL << ((h) - (l) + 1)) - 1) << (l)) /**< contiguous bitmask from bit l to bit h */
 
 #define FIELD_CLEAR(mask, reg) ((reg) &= ~(mask))                        /**< clear bits in reg covered by mask */
 #define FIELD_PREP(mask, val)  (((val) << __builtin_ctz(mask)) & (mask)) /**< shift val into the field defined by mask */
+
+/**
+ * @brief Set a bitfield in reg to val, using mask to locate the field
+ *
+ * Clears the bits covered by mask in reg, then ORs in val shifted into
+ * position (shift derived from the lowest set bit of mask).
+ *
+ * @param[in]     mask  bitmask of the target field
+ * @param[in]     val   unshifted value to write into the field
+ * @param[in,out] reg   register variable to modify
+ */
 #define FIELD_SET(mask, val, reg)       \
     do {                                \
         FIELD_CLEAR(mask, reg);         \
@@ -36,24 +47,32 @@ extern "C" {
  * @{
  */
 #define QMA6100P_REG_CHIP_ID             (0x00) /**< Chip ID */
-/* Acceleration data — 14-bit two's complement, burst-readable 0x01–0x06.
- * LSB reg: bits[7:2]=data[5:0], bit[0]=NEWDATA flag (1=updated since last read).
- * MSB reg: bits[7:0]=data[13:6], bit[7] is the sign bit. */
+
+/**
+ * @name    Acceleration data registers (0x01–0x06)
+ *
+ * 14-bit two's complement, burst-readable
+ * LSB[7:2]=data[5:0], LSB[0]=NEWDATA
+ * MSB[7:0]=data[13:6], MSB[7]=sign
+ * Pairs: DX=0x01-02, DY=0x03-04, DZ=0x05-06
+ *
+ * @{
+ */
 #define QMA6100P_REG_DX_LSB              (0x01) /**< X low: data[5:0] in bits[7:2] */
 #define QMA6100P_REG_DX_MSB              (0x02) /**< X high: data[13:6] */
 #define QMA6100P_REG_DY_LSB              (0x03) /**< Y low */
 #define QMA6100P_REG_DY_MSB              (0x04) /**< Y high */
 #define QMA6100P_REG_DZ_LSB              (0x05) /**< Z low */
 #define QMA6100P_REG_DZ_MSB              (0x06) /**< Z high */
-#define QMA6100P_REG_INT_ST2             (0x0B) /**< Interrupt status 2 (FIFO/data) */
+/** @} */
+
+/**
+ * @name    Control and configuration registers
+ * @{
+ */
 #define QMA6100P_REG_RANGE               (0x0F) /**< Full-scale range + LPF/HPF select */
 #define QMA6100P_REG_ODR                 (0x10) /**< Output data rate + NLPF */
 #define QMA6100P_REG_PM                  (0x11) /**< Power management (MODE, MCLK) */
-#define QMA6100P_REG_INT_EN1             (0x17) /**< Interrupt enable register */
-#define QMA6100P_REG_INT1_MAP1           (0x1A) /**< INT1 map: no_mot/FIFO/data/q_tap/any_mot */
-#define QMA6100P_REG_INT2_MAP1           (0x1C) /**< INT2 map: no_mot/FIFO/data/q_tap/any_mot */
-#define QMA6100P_REG_INTPIN_CONF         (0x20) /**< INT pin config (OD/LVL) */
-#define QMA6100P_REG_INT_CFG             (0x21) /**< Interrupt latch/shadow/I2C config */
 #define QMA6100P_REG_SW_RESET            (0x36) /**< Soft reset */
 #define QMA6100P_REG_NVM                 (0x33) /**< Non Volatile Memory */
 #define QMA6100P_REG_CHIP_STATE          (0x45) /**< Chip state */
@@ -62,12 +81,25 @@ extern "C" {
 /** @} */
 
 /**
+ * @name    Interrupt registers
+ * @{
+ */
+#define QMA6100P_REG_INT_ST2             (0x0B) /**< Interrupt status 2 (FIFO/data) */
+#define QMA6100P_REG_INT_EN1             (0x17) /**< Interrupt enable register */
+#define QMA6100P_REG_INT1_MAP1           (0x1A) /**< INT1 map: no_mot/FIFO/data/q_tap/any_mot */
+#define QMA6100P_REG_INT2_MAP1           (0x1C) /**< INT2 map: no_mot/FIFO/data/q_tap/any_mot */
+#define QMA6100P_REG_INTPIN_CONF         (0x20) /**< INT pin config (OD/LVL) */
+#define QMA6100P_REG_INT_CFG             (0x21) /**< Interrupt latch/shadow/I2C config */
+/** @} */
+/** @} */
+
+/**
  * @name    CHIP_ID (0x00)
  * Bits[7:4] = 0x9 (fixed). Bits[3:0] factory-set, software must ignore.
  * @{
  */
-#define QMA6100P_CHIP_ID_MASK            (0xF0)
-#define QMA6100P_CHIP_ID_VAL             (0x90)
+#define QMA6100P_CHIP_ID_MASK            (0xF0) /**< mask for the fixed upper nibble */
+#define QMA6100P_CHIP_ID_VAL             (0x90) /**< expected upper nibble (0x9x), lower nibble is factory-set */
 /** @} */
 
 /**
@@ -88,20 +120,21 @@ extern "C" {
  * @name    RANGE (0x0F) — full-scale range and filter select
  * @{
  */
-#define QMA6100P_RANGE_MASK              GENMASK(3, 0)
-/* bits[5:4] RESERVED, must be 0 */
-#define QMA6100P_RANGE_LPF_HPF           BIT(6) /**< 0=LPF mode, 1=HPF mode (affects NLPF in ODR) */
+#define QMA6100P_RANGE_MASK              GENMASK(3, 0) /**< full-scale range bits[3:0] mask */
+#define QMA6100P_RANGE_LPF_HPF           BIT(6)        /**< 0=LPF mode, 1=HPF mode (affects NLPF in ODR) */
 /** @} */
 
 /**
  * @name    ODR (0x10) — output data rate and filter
- * NLPF[2:0] in bits[7:5], ODR[4:0] in bits[4:0].
+ * ODR[4:0] in bits[4:0], NLPF[2:0] in bits[7:5].
+ *
+ * NLPF oversampling ratio depends on RANGE[LPF_HPF]:
+ * - LPF mode: 000=off, 100=×1, x01=×2, x10=×4, x11=×8
+ * - HPF mode: 000=off, 001=ODR/10, 010=ODR/25, ...
  * @{
  */
 #define QMA6100P_ODR_MASK                GENMASK(4, 0) /**< ODR bits[4:0] mask */
 #define QMA6100P_NLPF_MASK               GENMASK(7, 5) /**< NLPF bits[7:5] mask */
-/* NLPF when RANGE[LPF_HPF]=0 (LPF mode): 000=off, 100=1, x01=2, x10=4, x11=8 */
-/* NLPF when RANGE[LPF_HPF]=1 (HPF mode): 000=off, 001=ODR/10, 010=ODR/25, etc. */
 /** @} */
 
 /**
@@ -109,8 +142,7 @@ extern "C" {
  * Default 0x00 after POR — device is in standby. Write MODE=1 to activate.
  * @{
  */
-#define QMA6100P_PM_MODE_MASK            BIT(7) /**< active/standby mode bit mask */
-/* bit6 RESERVED */
+#define QMA6100P_PM_MODE_MASK            BIT(7)                           /**< active/standby mode bit mask */
 #define QMA6100P_PM_SINC_SHIFT           (4)                              /**< shift for T_RSTB_SINC[1:0] */
 #define QMA6100P_PM_SINC_MASK            GENMASK(5, 4)                    /**< mask for T_RSTB_SINC[1:0] */
 #define QMA6100P_PM_SINC_3MCLK           (0x00 << QMA6100P_PM_SINC_SHIFT) /**< SINC reset pulse = 3 MCLK cycles */
