@@ -95,7 +95,7 @@ extern "C" {
  *        operation and use polling instead.
  */
 #ifndef QMA6100P_PARAM_INT_PIN
-#  define QMA6100P_PARAM_INT_PIN_UNDEF (GPIO_UNDEF) /**< fallback when board does not define an INT pin */
+#  define QMA6100P_PARAM_INT_PIN_UNDEF (GPIO_UNDEF) /**< fallback when board has no INT pin */
 #  define QMA6100P_PARAM_INT_PIN       (QMA6100P_PARAM_INT_PIN_UNDEF)
 #endif
 
