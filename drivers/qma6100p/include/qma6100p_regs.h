@@ -149,6 +149,14 @@ extern "C" {
 #define QMA6100P_INTPIN_INT2_OD          BIT(3) /**< 0=push-pull, 1=open-drain */
 
 /**
+ * @name   INT pin mode
+ * @{
+ */
+#define QMA6100P_INTPIN_PUSH_PULL        (0) /**< INT pin push-pull mode */
+#define QMA6100P_INTPIN_OPEN_DRAIN       (1) /**< INT pin open-drain mode */
+/** @} */
+
+/**
  * @name   INT pin active level
  * @{
  */
@@ -162,8 +170,8 @@ extern "C" {
  * @{
  */
 #define QMA6100P_INT_CFG_CLR_MASK        BIT(7) /**< INT_STATUS clear behavior bit mask */
-#define QMA6100P_INT_CFG_CLR_ON_LATCH    (0) /**< INT_STATUS bits cleared only if latched */
-#define QMA6100P_INT_CFG_CLR_ON_ANY_READ (1) /**< INT_STATUS bits cleared on any read */
+#define QMA6100P_INT_CFG_CLR_ON_LATCH    (0)    /**< INT_STATUS bits cleared only if latched */
+#define QMA6100P_INT_CFG_CLR_ON_ANY_READ (1)    /**< INT_STATUS bits cleared on any read */
 /** @} */
 
 /**
@@ -171,8 +179,8 @@ extern "C" {
  * @{
  */
 #define QMA6100P_INT_CFG_LATCH_MASK      BIT(0) /**< INT latch mode bit mask */
-#define QMA6100P_INT_CFG_NON_LATCH       (0) /**< INT pulse clears automatically */
-#define QMA6100P_INT_CFG_LATCH           (1) /**< INT held until ack via @ref qma6100p_ack_int */
+#define QMA6100P_INT_CFG_NON_LATCH       (0)    /**< INT pulse clears automatically */
+#define QMA6100P_INT_CFG_LATCH           (1)    /**< INT held until ack via @ref qma6100p_ack_int */
 /** @} */
 
 /**
@@ -181,8 +189,8 @@ extern "C" {
  */
 
 #define QMA6100P_INT_CFG_SHADOW_MASK     BIT(6) /**< data shadowing disable bit mask */
-#define QMA6100P_INT_CFG_SHADOW_EN       (0)                                /**< shadowing enabled (default) */
-#define QMA6100P_INT_CFG_SHADOW_DIS      (1)                                /**< shadowing disabled */
+#define QMA6100P_INT_CFG_SHADOW_EN       (0)    /**< shadowing enabled (default) */
+#define QMA6100P_INT_CFG_SHADOW_DIS      (1)    /**< shadowing disabled */
 /** @} */
 
 /**
