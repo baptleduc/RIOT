@@ -93,13 +93,11 @@ extern "C" {
  * @def QMA6100P_PARAM_INT_PIN
  * @brief Default interrupt pin. Set to GPIO_UNDEF to disable interrupt-driven
  *        operation and use polling instead.
- * @{
  */
 #ifndef QMA6100P_PARAM_INT_PIN
-#  define QMA6100P_PARAM_INT_PIN_UNDEF (GPIO_UNDEF)
+#  define QMA6100P_PARAM_INT_PIN_UNDEF (GPIO_UNDEF) /**< fallback when board does not define an INT pin */
 #  define QMA6100P_PARAM_INT_PIN       (QMA6100P_PARAM_INT_PIN_UNDEF)
 #endif
-/** @} */
 
 /**
  * @def QMA6100P_PARAM_INT_ACTIVE_LEVEL

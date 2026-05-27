@@ -20,11 +20,11 @@
 extern "C" {
 #endif
 
-#define BIT(n)                 (1UL << (n))
-#define GENMASK(h, l)          (((1UL << ((h) - (l) + 1)) - 1) << (l))
+#define BIT(n)                 (1UL << (n))                              /**< single-bit mask at position n */
+#define GENMASK(h, l)          (((1UL << ((h) - (l) + 1)) - 1) << (l))  /**< contiguous bitmask from bit l to bit h */
 
-#define FIELD_CLEAR(mask, reg) ((reg) &= ~(mask))
-#define FIELD_PREP(mask, val)  (((val) << __builtin_ctz(mask)) & (mask))
+#define FIELD_CLEAR(mask, reg) ((reg) &= ~(mask))                        /**< clear bits in reg covered by mask */
+#define FIELD_PREP(mask, val)  (((val) << __builtin_ctz(mask)) & (mask)) /**< shift val into the field defined by mask */
 #define FIELD_SET(mask, val, reg)       \
     do {                                \
         FIELD_CLEAR(mask, reg);         \
