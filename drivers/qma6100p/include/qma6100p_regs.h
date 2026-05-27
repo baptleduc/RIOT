@@ -151,9 +151,9 @@ extern "C" {
 #define QMA6100P_PM_SINC_8MCLK           (0x03 << QMA6100P_PM_SINC_SHIFT) /**< SINC reset pulse = 8 MCLK cycles */
 #define QMA6100P_PM_MCLK_MASK            GENMASK(3, 0)                    /**< MCLK[3:0] */
 #define QMA6100P_PM_MCLK_51K2            (0x04)                           /**< 51.2 kHz — recommended default */
-#define QMA6100P_PM_MCLK_25K6            (0x05)
-#define QMA6100P_PM_MCLK_12K8            (0x06)
-#define QMA6100P_PM_MCLK_6K4             (0x07)
+#define QMA6100P_PM_MCLK_25K6            (0x05) /**< 25.6 kHz */
+#define QMA6100P_PM_MCLK_12K8            (0x06) /**< 12.8 kHz */
+#define QMA6100P_PM_MCLK_6K4             (0x07) /**< 6.4 kHz */
 /** @} */
 
 /**
