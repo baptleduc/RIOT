@@ -335,12 +335,31 @@ int qma6100p_init(qma6100p_t *dev, const qma6100p_params_t *params)
     return QMA6100P_OK;
 }
 
+/**
+ * @brief Convert readed output data on two uint8_t register into a 14 bit signed data.
+ *
+ * Merge two uint8_t register getting all [7:0] from @p msb and [7:2] from @p lsb and convert it into a int16_t signed value.
+ *
+ * @param  lsb[in]      lsb of the data register
+ * @param  msb[in]      msb of the datat register
+ *
+ * @return 14 bits signed data
+ */
 static inline int16_t _to_signed14(uint8_t lsb, uint8_t msb)
 {
     uint16_t raw = (uint16_t)msb << 8 | lsb;
     return (int16_t)((int16_t)raw >> 2);
 }
 
+/**
+ * @brief Read the raw output data of the device and write them in the given buffer
+ *
+ * @param[in,out] dev         device descriptor
+ * @param[out]    data        raw data buffer
+ *
+ * @return  0 on success
+ * @return  negative error code on I2C failure
+ */
 int qma6100p_read_raw(const qma6100p_t *dev, qma6100p_raw_data_t *data)
 {
     assert(dev && data);
@@ -375,6 +394,14 @@ out:
     return res;
 }
 
+/**
+ * @brief Converts to g a raw data value given the full scale range
+ *
+ * @param raw_value raw data to convert in g
+ * @param range     full scale range used
+ *
+ * @return converted to g value
+ */
 static float _convert_to_g(int16_t raw_value, qma6100p_range_t range)
 {
     float resolution = QMA6100P_2G_RESOLUTION;
