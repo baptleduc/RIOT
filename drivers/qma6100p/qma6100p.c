@@ -169,7 +169,7 @@ static int _soft_reset(const qma6100p_t *dev)
     /* Wait for OTP to load */
     do {
         READ_REG(QMA6100P_REG_NVM, nvm_status, out);
-    } while ((nvm_status & 0x05) != 0x05);
+    } while (!(nvm_status & (QMA6100P_NVM_LOAD_DONE | QMA6100P_NVM_RDY)));
 
 out:
     return res;
