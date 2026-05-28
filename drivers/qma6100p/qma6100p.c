@@ -216,12 +216,22 @@ out:
     return res;
 }
 
-static int _qma6100p_set_range(qma6100p_t *dev, qma6100p_range_t range)
+/**
+ * @brief Configure full scale range of the device
+ *
+ *
+ * @param[in,out] dev         device descriptor
+ * @param[in]     range       requested scale range
+ *
+ * @return  0 on success
+ * @return  negative error code on I2C failure
+ *
+ * @warning I2C bus must be acquired by the caller
+ */
+static int _qma6100p_set_range(const qma6100p_t *dev, qma6100p_range_t range)
 {
     int res;
     uint8_t range_reg;
-
-    i2c_acquire(BUS);
 
     READ_REG(QMA6100P_REG_RANGE, range_reg, out);
 
@@ -230,22 +240,62 @@ static int _qma6100p_set_range(qma6100p_t *dev, qma6100p_range_t range)
     WRITE_REG(QMA6100P_REG_RANGE, range_reg, out);
 
 out:
-    i2c_release(BUS);
     return res;
 }
 
-static int _qma6100p_set_odr(qma6100p_t *dev, qma6100p_odr_t odr)
+/**
+ * @brief Configure output data rate.
+ *
+ *
+ * @param[in,out] dev         device descriptor
+ * @param[in]     odr         requested output data rate
+ *
+ * @return  0 on success
+ * @return  negative error code on I2C failure
+ *
+ * @warning I2C bus must be acquired by the caller
+ */
+static int _qma6100p_set_odr(const qma6100p_t *dev, qma6100p_odr_t odr)
 {
     int res;
     uint8_t odr_reg;
-
-    i2c_acquire(BUS);
 
     READ_REG(QMA6100P_REG_ODR, odr_reg, out);
 
     FIELD_SET(QMA6100P_ODR_MASK, odr, odr_reg);
 
     WRITE_REG(QMA6100P_REG_ODR, odr_reg, out);
+
+out:
+    return res;
+}
+
+/**
+ * @brief Set all the common parameter requested by the user
+ *
+ * Sets full scale range, output data range from @p params
+ *
+ * @param[in,out] dev         device descriptor
+ * @param[in]     params      configuration parameters
+ *
+ * @return  0 on success
+ * @return  negative error code on I2C failure
+ */
+static int _qma6100p_set_common_params(const qma6100p_t *dev, const qma6100p_params_t *params)
+{
+    int res;
+
+    i2c_acquire(BUS);
+
+    res = _qma6100p_set_odr(dev, params->rate);
+    if (res < 0) {
+        goto out;
+    }
+
+    res = _qma6100p_set_range(dev, params->range);
+    if (res < 0) {
+        goto out;
+    }
 
 out:
     i2c_release(BUS);
@@ -277,17 +327,12 @@ int qma6100p_init(qma6100p_t *dev, const qma6100p_params_t *params)
         return res;
     }
 
-    res = _qma6100p_set_odr(dev, params->rate);
+    res = _qma6100p_set_common_params(dev, params);
     if (res < 0) {
         return res;
     }
 
-    res = _qma6100p_set_range(dev, params->range);
-    if (res < 0) {
-        return res;
-    }
-
-    DEBUG("[qma6100p] init: successful\n");
+    DEBUG("[qma6100p] common params set: succesful\n");
     return QMA6100P_OK;
 }
 
