@@ -16,11 +16,9 @@
  */
 
 #include <assert.h>
-#include <stdint.h>
 
 #include "periph/gpio.h"
 #include "periph/i2c.h"
-#include "qma6100p.h"
 #include "qma6100p_params.h"
 #include "qma6100p_regs.h"
 #include "ztimer.h"
