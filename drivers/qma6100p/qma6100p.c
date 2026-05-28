@@ -150,31 +150,20 @@ static int _soft_reset(const qma6100p_t *dev)
 {
     int res;
 
-    res = _write_reg(BUS, ADDR, QMA6100P_REG_SW_RESET, QMA6100P_SW_RESET_VAL);
-    if (res < 0) {
-        DEBUG("[qma6100p] soft_reset - error: failed to write SW_RESET register\n");
-        return res;
-    }
+    WRITE_REG(QMA6100P_REG_SW_RESET, QMA6100P_SW_RESET_VAL, out);
 
     ztimer_sleep(ZTIMER_MSEC, 1);
 
-    res = _write_reg(BUS, ADDR, QMA6100P_REG_SW_RESET, 0x00);
-    if (res < 0) {
-        DEBUG("[qma6100p] soft_reset - error: failed to write SW_RESET register\n");
-        return res;
-    }
+    WRITE_REG(QMA6100P_REG_SW_RESET, 0x00, out);
 
     uint8_t nvm_status;
 
     /* Wait for OTP to load */
     do {
-        res = _read_reg(BUS, ADDR, QMA6100P_REG_NVM, &nvm_status);
-        if (res < 0) {
-            DEBUG("[qma6100p] soft_reset - error: failed read NVM register.\n");
-            return res;
-        }
+        READ_REG(QMA6100P_REG_NVM, nvm_status, out);
     } while ((nvm_status & 0x05) != 0x05);
 
+out:
     return res;
 }
 
@@ -191,39 +180,19 @@ static int _qma6100p_run_init_seq(qma6100p_t *dev)
         if (res < 0) {
             goto out;
         }
-        res = _read_reg(BUS, ADDR, QMA6100P_REG_CHIP_STATE, &chip_state);
-        if (res < 0) {
-            goto out;
-        }
+        READ_REG(QMA6100P_REG_CHIP_STATE, chip_state, out);
     } while ((chip_state >> 4) != 0x0C);
 
-    res = _write_reg(BUS, ADDR, QMA6100P_REG_PM, 0x80);
-    if (res < 0) {
-        goto out;
-    }
+    WRITE_REG(QMA6100P_REG_PM, 0x80, out);
+    WRITE_REG(QMA6100P_REG_PM, 0x84, out);
 
-    res = _write_reg(BUS, ADDR, QMA6100P_REG_PM, 0x84);
-    if (res < 0) {
-        goto out;
-    }
-
-    res = _write_reg(BUS, ADDR, QMA6100P_REG_TST0_ANA, 0x20);
-    if (res < 0) {
-        goto out;
-    }
-
-    res = _write_reg(BUS, ADDR, QMA6100P_REG_AFE_ANA, 0x01);
-    if (res < 0) {
-        goto out;
-    }
-
-    res = _write_reg(BUS, ADDR, QMA6100P_REG_TST1_ANA, 0x80);
-    if (res < 0) {
-        goto out;
-    }
+    WRITE_REG(QMA6100P_REG_TST0_ANA, 0x20, out);
+    WRITE_REG(QMA6100P_REG_AFE_ANA, 0x01, out);
+    WRITE_REG(QMA6100P_REG_TST1_ANA, 0x80, out);
 
     ztimer_sleep(ZTIMER_MSEC, 1);
-    res = _write_reg(BUS, ADDR, QMA6100P_REG_TST1_ANA, 0x00);
+
+    WRITE_REG(QMA6100P_REG_TST1_ANA, 0x00, out);
 
 out:
     i2c_release(BUS);
@@ -237,13 +206,11 @@ static int _qma6100p_set_range(qma6100p_t *dev, qma6100p_range_t range)
 
     i2c_acquire(BUS);
 
-    res = _read_reg(BUS, ADDR, QMA6100P_REG_RANGE, &range_reg);
-    if (res < 0) {
-        goto out;
-    }
+    READ_REG(QMA6100P_REG_RANGE, range_reg, out);
 
     FIELD_SET(QMA6100P_RANGE_MASK, range, range_reg);
-    res = _write_reg(BUS, ADDR, QMA6100P_REG_RANGE, range_reg);
+
+    WRITE_REG(QMA6100P_REG_RANGE, range_reg, out);
 
 out:
     i2c_release(BUS);
@@ -257,14 +224,11 @@ static int _qma6100p_set_odr(qma6100p_t *dev, qma6100p_odr_t odr)
 
     i2c_acquire(BUS);
 
-    res = _read_reg(BUS, ADDR, QMA6100P_REG_ODR, &odr_reg);
-    if (res < 0) {
-        DEBUG("[qma6100p] odr - error: failed read odr register.\n");
-        goto out;
-    }
+    READ_REG(QMA6100P_REG_ODR, odr_reg, out);
 
     FIELD_SET(QMA6100P_ODR_MASK, odr, odr_reg);
-    res = _write_reg(BUS, ADDR, QMA6100P_REG_ODR, odr_reg);
+
+    WRITE_REG(QMA6100P_REG_ODR, odr_reg, out);
 
 out:
     i2c_release(BUS);
