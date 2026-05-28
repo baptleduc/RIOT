@@ -32,10 +32,10 @@
 #define NOT_YET_IMPLEMENTED() DEBUG("%s not yet implemented\n", __func__)
 
 /**
- * @brief   Read a register and jump to a label on failure.
+ * @brief   Read a register and jump to a label on failure
  *
- * @warning Requires in calling scope: `int res`, label `out_label`, macros `BUS` and `ADDR`.
- *          On failure, `res` holds the error code and execution jumps to `out_label`.
+ * @warning Requires in calling scope: `int res`, label `out_label`, macros `BUS` and `ADDR`
+ *          On failure, `res` holds the error code and execution jumps to `out_label`
 */
 #define READ_REG(reg_addr, reg_val, out_label)                                     \
     do {                                                                           \
@@ -47,10 +47,10 @@
     } while (0)
 
 /**
- * @brief   Write a register and jump to a label on failure.
+ * @brief   Write a register and jump to a label on failure
  *
- * @warning Requires in calling scope: `int res`, label `out_label`, macros `BUS` and `ADDR`.
- *          On failure, `res` holds the error code and execution jumps to `out_label`.
+ * @warning Requires in calling scope: `int res`, label `out_label`, macros `BUS` and `ADDR`
+ *          On failure, `res` holds the error code and execution jumps to `out_label`
 */
 #define WRITE_REG(reg_addr, reg_val, out_label)                                     \
     do {                                                                            \
@@ -215,7 +215,7 @@ out:
 /**
  * @brief Configure interrupt behavior in INT_CFG register
  *
- * Sets latch mode, status clear behavior, and data shadowing from @p int_params.
+ * Sets latch mode, status clear behavior, and data shadowing from @p int_params
  *
  * @param[in,out] dev         device descriptor
  * @param[in]     int_params  interrupt parameters
@@ -303,7 +303,7 @@ out:
  * @brief Configure INTPIN_CONF register and resolve the MAP register for the selected INT pin
  *
  * Sets active level and output mode (push-pull/open-drain) for the chosen INT pin,
- * and writes @p map_reg with the corresponding INTx_MAP1 register address.
+ * and writes @p map_reg with the corresponding INTx_MAP1 register address
  *
  * @param[in]  dev      device descriptor
  * @param[in]  params   interrupt parameters (@ref qma6100p_int_params_t)
