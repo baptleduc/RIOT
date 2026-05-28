@@ -103,7 +103,7 @@ extern "C" {
 /** @} */
 
 /**
- * @name    Data LSB registers (0x01 / 0x03 / 0x05)
+ * @name    Data QMA6100P_REG_D(X|Y|Z)_LSB masks — new-data flag
  * @{
  */
 #define QMA6100P_NEWDATA_FLAG            BIT(0) /**< 1 = channel updated since last read */
@@ -143,17 +143,7 @@ extern "C" {
  * @{
  */
 #define QMA6100P_PM_MODE_MASK            BIT(7)                           /**< active/standby mode bit mask */
-#define QMA6100P_PM_SINC_SHIFT           (4)                              /**< shift for T_RSTB_SINC[1:0] */
-#define QMA6100P_PM_SINC_MASK            GENMASK(5, 4)                    /**< mask for T_RSTB_SINC[1:0] */
-#define QMA6100P_PM_SINC_3MCLK           (0x00 << QMA6100P_PM_SINC_SHIFT) /**< SINC reset pulse = 3 MCLK cycles */
-#define QMA6100P_PM_SINC_4MCLK           (0x01 << QMA6100P_PM_SINC_SHIFT) /**< SINC reset pulse = 4 MCLK cycles */
-#define QMA6100P_PM_SINC_6MCLK           (0x02 << QMA6100P_PM_SINC_SHIFT) /**< SINC reset pulse = 6 MCLK cycles */
-#define QMA6100P_PM_SINC_8MCLK           (0x03 << QMA6100P_PM_SINC_SHIFT) /**< SINC reset pulse = 8 MCLK cycles */
 #define QMA6100P_PM_MCLK_MASK            GENMASK(3, 0)                    /**< MCLK[3:0] */
-#define QMA6100P_PM_MCLK_51K2            (0x04)                           /**< 51.2 kHz — recommended default */
-#define QMA6100P_PM_MCLK_25K6            (0x05) /**< 25.6 kHz */
-#define QMA6100P_PM_MCLK_12K8            (0x06) /**< 12.8 kHz */
-#define QMA6100P_PM_MCLK_6K4             (0x07) /**< 6.4 kHz */
 /** @} */
 
 /**
@@ -175,54 +165,19 @@ extern "C" {
  * Default 0x05 = INT1 active-high push-pull, INT2 active-high push-pull.
  * @{
  */
-#define QMA6100P_INTPIN_INT1_LVL         BIT(0) /**< 0=active-low, 1=active-high */
-#define QMA6100P_INTPIN_INT1_OD          BIT(1) /**< 0=push-pull, 1=open-drain */
-#define QMA6100P_INTPIN_INT2_LVL         BIT(2) /**< 0=active-low, 1=active-high */
-#define QMA6100P_INTPIN_INT2_OD          BIT(3) /**< 0=push-pull, 1=open-drain */
-
-/**
- * @name   INT pin mode
- * @{
- */
-#define QMA6100P_INTPIN_PUSH_PULL        (0) /**< INT pin push-pull mode */
-#define QMA6100P_INTPIN_OPEN_DRAIN       (1) /**< INT pin open-drain mode */
+#define QMA6100P_INTPIN_INT1_LVL_MASK         BIT(0) /**< INT1 active level mask (@ref qma6100p_int_active_level_t) */
+#define QMA6100P_INTPIN_INT1_OD_MASK          BIT(1) /**< INT1 output mode mask (@ref qma6100p_int_pin_mode_t) */
+#define QMA6100P_INTPIN_INT2_LVL_MASK         BIT(2) /**< INT2 active level mask (@ref qma6100p_int_active_level_t) */
+#define QMA6100P_INTPIN_INT2_OD_MASK          BIT(3) /**< INT2 output mode mask (@ref qma6100p_int_pin_mode_t) */
 /** @} */
 
 /**
  * @name   INT pin active level
  * @{
  */
-#define QMA6100P_INTPIN_ACTIVE_LOW       (0) /**< INT pin active LOW on interrupt */
-#define QMA6100P_INTPIN_ACTIVE_HIGH      (1) /**< INT pin active HIGH on interrupt */
-/** @} */
-/** @} */
-
-/**
- * @name   INT status clear behavior
- * @{
- */
-#define QMA6100P_INT_CFG_CLR_MASK        BIT(7) /**< INT_STATUS clear behavior bit mask */
-#define QMA6100P_INT_CFG_CLR_ON_LATCH    (0)    /**< INT_STATUS bits cleared only if latched */
-#define QMA6100P_INT_CFG_CLR_ON_ANY_READ (1)    /**< INT_STATUS bits cleared on any read */
-/** @} */
-
-/**
- * @name   INT latch mode
- * @{
- */
-#define QMA6100P_INT_CFG_LATCH_MASK      BIT(0) /**< INT latch mode bit mask */
-#define QMA6100P_INT_CFG_NON_LATCH       (0)    /**< INT pulse clears automatically */
-#define QMA6100P_INT_CFG_LATCH           (1)    /**< INT held until ack via @ref qma6100p_ack_int */
-/** @} */
-
-/**
- * @name   INT shadowing function mode
- * @{
- */
-
-#define QMA6100P_INT_CFG_SHADOW_MASK     BIT(6) /**< data shadowing disable bit mask */
-#define QMA6100P_INT_CFG_SHADOW_EN       (0)    /**< shadowing enabled (default) */
-#define QMA6100P_INT_CFG_SHADOW_DIS      (1)    /**< shadowing disabled */
+#define QMA6100P_INT_CFG_CLR_MASK        BIT(7) /**< INT_STATUS clear behavior mask (@ref qma6100p_int_clr_t) */
+#define QMA6100P_INT_CFG_SHADOW_MASK     BIT(6) /**< data shadowing mode mask (@ref qma6100p_int_shadow_t) */
+#define QMA6100P_INT_CFG_LATCH_MASK      BIT(0) /**< INT latch mode mask (@ref qma6100p_int_latch_t) */
 /** @} */
 
 /**
