@@ -30,7 +30,7 @@ extern "C" {
  * @brief Set a bitfield in reg to val, using mask to locate the field
  *
  * Clears the bits covered by mask in reg, then ORs in val shifted into
- * position (shift derived from the lowest set bit of mask).
+ * position (shift derived from the lowest set bit of mask)
  *
  * @param[in]     mask  bitmask of the target field
  * @param[in]     val   unshifted value to write into the field
@@ -94,8 +94,8 @@ extern "C" {
 /** @} */
 
 /**
- * @name    CHIP_ID (0x00)
- * Bits[7:4] = 0x9 (fixed). Bits[3:0] factory-set, software must ignore.
+ * @name    CHIP_ID (0x00) masks — chip ID field
+ * Bits[7:4] = 0x9 (fixed). Bits[3:0] factory-set, software must ignore
  * @{
  */
 #define QMA6100P_CHIP_ID_MASK            (0xF0) /**< mask for the fixed upper nibble */
@@ -106,27 +106,27 @@ extern "C" {
  * @name    Data QMA6100P_REG_D(X|Y|Z)_LSB masks — new-data flag
  * @{
  */
-#define QMA6100P_NEWDATA_FLAG            BIT(0) /**< 1 = channel updated since last read */
+#define QMA6100P_NEWDATA_FLAG_MASK       BIT(0) /**< 1 = channel updated since last read */
 /** @} */
 
 /**
- * @name    INT_ST2 (0x0B) — data-ready status
+ * @name    INT_ST2 (0x0B) masks — data-ready status
  * @{
  */
-#define QMA6100P_INT_ST2_DATA_INT        BIT(4) /**< data-ready interrupt active */
+#define QMA6100P_INT_ST2_DATA_INT_MASK   BIT(4) /**< data-ready interrupt active */
 /** @} */
 
 /**
- * @name    RANGE (0x0F) — full-scale range and filter select
+ * @name    RANGE (0x0F) masks — full-scale range and filter select
  * @{
  */
 #define QMA6100P_RANGE_MASK              GENMASK(3, 0) /**< full-scale range bits[3:0] mask */
-#define QMA6100P_RANGE_LPF_HPF           BIT(6)        /**< 0=LPF mode, 1=HPF mode (affects NLPF in ODR) */
+#define QMA6100P_RANGE_LPF_HPF_MASK      BIT(6)        /**< 0=LPF mode, 1=HPF mode (affects NLPF in ODR) */
 /** @} */
 
 /**
- * @name    ODR (0x10) — output data rate and filter
- * ODR[4:0] in bits[4:0], NLPF[2:0] in bits[7:5].
+ * @name    ODR (0x10) masks — output data rate and filter
+ * ODR[4:0] in bits[4:0], NLPF[2:0] in bits[7:5]
  *
  * NLPF oversampling ratio depends on RANGE[LPF_HPF]:
  * - LPF mode: 000=off, 100=×1, x01=×2, x10=×4, x11=×8
@@ -138,8 +138,7 @@ extern "C" {
 /** @} */
 
 /**
- * @name    PM (0x11) — power management
- * Default 0x00 after POR — device is in standby. Write MODE=1 to activate.
+ * @name    PM (0x11) masks — power management
  * @{
  */
 #define QMA6100P_PM_MODE_MASK            BIT(7)                           /**< active/standby mode bit mask */
@@ -147,22 +146,22 @@ extern "C" {
 /** @} */
 
 /**
- * @name    INT_EN1 (0x17) — data-ready interrupt enable
+ * @name    INT_EN1 (0x17) masks — data-ready interrupt enable
  * @{
  */
-#define QMA6100P_INT_EN1_DATA            BIT(4) /**< data-ready interrupt enable */
+#define QMA6100P_INT_EN1_DATA_MASK            BIT(4) /**< data-ready interrupt enable */
 /** @} */
 
 /**
- * @name    INT1_MAP1 (0x1A) / INT2_MAP1 (0x1C) — route data-ready to INT pin
+ * @name    INT1_MAP1 (0x1A) / INT2_MAP1 (0x1C) masks — route data-ready to INT pin
  * @{
  */
-#define QMA6100P_INT_MAP1_DATA           BIT(4) /**< route data-ready to INTx pin */
+#define QMA6100P_INT_MAP1_DATA_MASK           BIT(4) /**< route data-ready to INTx pin */
 /** @} */
 
 /**
- * @name    INTPIN_CONF (0x20) — INT pin electrical config
- * Default 0x05 = INT1 active-high push-pull, INT2 active-high push-pull.
+ * @name    INTPIN_CONF (0x20) masks — INT pin electrical config
+ * Default 0x05 = INT1 active-high push-pull, INT2 active-high push-pull
  * @{
  */
 #define QMA6100P_INTPIN_INT1_LVL_MASK         BIT(0) /**< INT1 active level mask (@ref qma6100p_int_active_level_t) */
@@ -172,7 +171,7 @@ extern "C" {
 /** @} */
 
 /**
- * @name   INT pin active level
+ * @name    INT_CFG (0x21) masks — interrupt latch/shadow config
  * @{
  */
 #define QMA6100P_INT_CFG_CLR_MASK        BIT(7) /**< INT_STATUS clear behavior mask (@ref qma6100p_int_clr_t) */
@@ -181,7 +180,7 @@ extern "C" {
 /** @} */
 
 /**
- * @name    SW_RESET (0x36)
+ * @name    SW_RESET (0x36) — soft reset
  * @{
  */
 #define QMA6100P_SW_RESET_VAL            (0xB6) /**< trigger soft reset */

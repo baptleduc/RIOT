@@ -327,13 +327,13 @@ static int _set_intpin_conf(const qma6100p_t *dev,
     switch (params->interrupt_pin_num) {
     case QMA6100P_INT1:
         *map_reg = QMA6100P_REG_INT1_MAP1;
-        FIELD_SET(QMA6100P_INTPIN_INT1_LVL, params->active_level_int, reg);
-        FIELD_SET(QMA6100P_INTPIN_INT1_OD, params->pin_mode_int, reg);
+        FIELD_SET(QMA6100P_INTPIN_INT1_LVL_MASK, params->active_level_int, reg);
+        FIELD_SET(QMA6100P_INTPIN_INT1_OD_MASK, params->pin_mode_int, reg);
         break;
     case QMA6100P_INT2:
         *map_reg = QMA6100P_REG_INT2_MAP1;
-        FIELD_SET(QMA6100P_INTPIN_INT2_LVL, params->active_level_int, reg);
-        FIELD_SET(QMA6100P_INTPIN_INT2_OD, params->pin_mode_int, reg);
+        FIELD_SET(QMA6100P_INTPIN_INT2_LVL_MASK, params->active_level_int, reg);
+        FIELD_SET(QMA6100P_INTPIN_INT2_OD_MASK, params->pin_mode_int, reg);
         break;
     default:
         res = QMA6100P_INVALID_ARG;
@@ -365,7 +365,7 @@ static int _route_data_ready_int(const qma6100p_t *dev, uint8_t map_reg)
     uint8_t reg;
 
     READ_REG(map_reg, reg, out);
-    reg |= QMA6100P_INT_MAP1_DATA;
+    FIELD_SET(QMA6100P_INT_MAP1_DATA_MASK, 1, reg);
     WRITE_REG(map_reg, reg, out);
 
 out:
@@ -388,7 +388,7 @@ static int _enable_data_ready_int(const qma6100p_t *dev)
     uint8_t reg;
 
     READ_REG(QMA6100P_REG_INT_EN1, reg, out);
-    reg |= QMA6100P_INT_EN1_DATA;
+    FIELD_SET(QMA6100P_INT_EN1_DATA_MASK, 1, reg);
     WRITE_REG(QMA6100P_REG_INT_EN1, reg, out);
 
 out:
