@@ -146,6 +146,16 @@ out:
     return res;
 }
 
+/**
+ * @brief Execute the device soft reset
+ *
+ * @param[in] dev  device descriptor
+ *
+ * @return  0 on success
+ * @return  negative error code on failure
+ *
+ * @warning I2C bus must be acquired by the caller
+ */
 static int _soft_reset(const qma6100p_t *dev)
 {
     int res;
@@ -167,13 +177,20 @@ out:
     return res;
 }
 
-static int _qma6100p_run_init_seq(qma6100p_t *dev)
+/**
+ * @brief Execute the init sequence as described in the section 6.3 of the spec.
+ *
+ * @param[in] dev  device descriptor
+ *
+ * @return  0 on success
+ * @return  negative error code on failure
+ */
+static int _qma6100p_run_init_seq(const qma6100p_t *dev)
 {
     int res;
 
     i2c_acquire(BUS);
 
-    /* Initial sequence as described in 6.3 */
     uint8_t chip_state;
     do {
         res = _soft_reset(dev);
