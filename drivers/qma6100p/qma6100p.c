@@ -315,22 +315,22 @@ int qma6100p_init(qma6100p_t *dev, const qma6100p_params_t *params)
 
     res = _qma6100p_run_init_seq(dev);
     if (res < 0) {
+        DEBUG("[qma6100p] init: init sequence failed (%d)\n", res);
         return res;
     }
 
-    DEBUG("[qma6100p] init sequence: successful ");
-
     res = qma6100p_set_mode(dev, params->mode);
     if (res < 0) {
+        DEBUG("[qma6100p] init: set mode failed (%d)\n", res);
         return res;
     }
 
     res = _qma6100p_set_common_params(dev, params);
     if (res < 0) {
+        DEBUG("[qma6100p] init: set common parameters failed (%d)\n", res);
         return res;
     }
 
-    DEBUG("[qma6100p] common params set: succesful\n");
     return QMA6100P_OK;
 }
 
