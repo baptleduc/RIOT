@@ -445,6 +445,7 @@ int qma6100p_read(const qma6100p_t *dev, qma6100p_data_t *data)
 
     res = qma6100p_read_raw(dev, &raw_data);
     if (res < 0) {
+        DEBUG("[qma6100p] read: read raw data failed (%d)\n", res);
         return res;
     }
 
