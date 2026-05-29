@@ -11,6 +11,7 @@
  * @brief       Driver for the 3-axis QMA6100P accelerometer
  *
  * @author      Baptiste Le Duc <baptiste.leduc@etik.com>
+ * @author      Léandre Le Duc <leandre.leduc38@gmail.com>
  *
  * @}
  */
