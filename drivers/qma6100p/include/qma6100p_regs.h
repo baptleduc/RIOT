@@ -123,6 +123,7 @@ extern "C" {
  */
 #define QMA6100P_RANGE_MASK              GENMASK(3, 0) /**< full-scale range bits[3:0] mask */
 #define QMA6100P_RANGE_LPF_HPF_MASK      BIT(6)        /**< 0=LPF mode, 1=HPF mode (affects NLPF in ODR) */
+/** @} */
 
 /**
  * @name Resolution - Range associated resolution used to convert in g in ug/LSB
