@@ -371,6 +371,7 @@ int qma6100p_read_raw(const qma6100p_t *dev, qma6100p_raw_data_t *data)
 
     i2c_acquire(BUS);
 
+    /* Burst read 6 bytes to ensure atomic update of X/Y/Z samples (avoid LSB/MSB mismatch) */
     res = i2c_read_regs(BUS, ADDR, QMA6100P_REG_DX_LSB, buf, 6, 0);
     if (res < 0) {
         goto out;
