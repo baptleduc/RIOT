@@ -20,6 +20,7 @@
 
 #include "periph/gpio.h"
 #include "periph/i2c.h"
+#include "qma6100p.h"
 #include "qma6100p_params.h"
 #include "qma6100p_regs.h"
 #include "ztimer.h"
@@ -365,7 +366,7 @@ int qma6100p_read_raw(const qma6100p_t *dev, qma6100p_raw_data_t *data)
 {
     assert(dev && data);
 
-    int res;
+    int res = QMA6100P_DATA_READY;
     uint8_t buf[6];
     uint8_t new_data;
 
@@ -384,8 +385,6 @@ int qma6100p_read_raw(const qma6100p_t *dev, qma6100p_raw_data_t *data)
         res = QMA6100P_NODATA;
         goto out;
     }
-
-    res = QMA6100P_DATA_READY;
 
     data->x = _to_signed14(buf[0], buf[1]);
     data->y = _to_signed14(buf[2], buf[3]);
