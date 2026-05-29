@@ -412,30 +412,28 @@ static int32_t _convert_to_ug(int16_t raw_value, qma6100p_range_t range)
     int32_t resolution = QMA6100P_2G_RESOLUTION;
 
     switch (range) {
-    case (QMA6100P_RANGE_2G): {
+    case (QMA6100P_RANGE_2G):
         resolution = QMA6100P_2G_RESOLUTION;
         break;
-    }
 
-    case (QMA6100P_RANGE_4G): {
+    case (QMA6100P_RANGE_4G):
         resolution = QMA6100P_4G_RESOLUTION;
         break;
-    }
 
-    case (QMA6100P_RANGE_8G): {
+    case (QMA6100P_RANGE_8G):
         resolution = QMA6100P_8G_RESOLUTION;
         break;
-    }
 
-    case (QMA6100P_RANGE_16G): {
+    case (QMA6100P_RANGE_16G):
         resolution = QMA6100P_16G_RESOLUTION;
         break;
-    }
 
-    case (QMA6100P_RANGE_32G): {
+    case (QMA6100P_RANGE_32G):
         resolution = QMA6100P_32G_RESOLUTION;
         break;
-    }
+    default:
+        resolution = QMA6100P_2G_RESOLUTION;
+        break;
     }
     return raw_value * resolution;
 }
