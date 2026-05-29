@@ -216,9 +216,9 @@ typedef struct {
  * @brief   Converted acceleration data in g
  */
 typedef struct {
-    float x; /**< acceleration in X direction [g] */
-    float y; /**< acceleration in Y direction [g] */
-    float z; /**< acceleration in Z direction [g] */
+    int32_t x; /**< acceleration in X direction [ug] */
+    int32_t y; /**< acceleration in Y direction [ug] */
+    int32_t z; /**< acceleration in Z direction [ug] */
 } qma6100p_data_t;
 
 /**
@@ -259,14 +259,14 @@ int qma6100p_set_mode(qma6100p_t *dev, qma6100p_mode_t mode);
 int qma6100p_read_raw(const qma6100p_t *dev, qma6100p_raw_data_t *data);
 
 /**
- * @brief   Read accelerometer data converted to g
+ * @brief   Read accelerometer data converted to ug
  *
  * Converts raw counts using the configured range sensitivity
  *
  * @param[in]  dev          device descriptor of accelerometer
- * @param[out] data         acceleration in g per axis
+ * @param[out] data         acceleration in ug per axis
  *
- * @return                  QMA6100P_NODATA if nothing has changed and keep data unchanged.
+ * @return                  QMA6100P_NODATA if nothing has changed and keep data unchanged
  */
 int qma6100p_read(const qma6100p_t *dev, qma6100p_data_t *data);
 

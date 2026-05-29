@@ -125,15 +125,14 @@ extern "C" {
 #define QMA6100P_RANGE_LPF_HPF_MASK      BIT(6)        /**< 0=LPF mode, 1=HPF mode (affects NLPF in ODR) */
 
 /**
- * @name Resolution - Range associated resolution used to convert in g
+ * @name Resolution - Range associated resolution used to convert in g in ug/LSB
  * @{
  */
-#define QMA6100P_2G_RESOLUTION           (244e-6)  /**< Resolution for a +- 2g range */
-#define QMA6100P_4G_RESOLUTION           (488e-6)  /**< Resolution for a +- 4g range */
-#define QMA6100P_8G_RESOLUTION           (977e-6)  /**< Resolution for a +- 8g range */
-#define QMA6100P_16G_RESOLUTION          (1.85e-3) /**< Resolution for a +- 16g range */
-#define QMA6100P_32G_RESOLUTION          (3.81e-3) /**< Resolution for a +- 32g range */
-/** @} */
+#define QMA6100P_2G_RESOLUTION           (244)  /**< Resolution for a +- 2g range */
+#define QMA6100P_4G_RESOLUTION           (488)  /**< Resolution for a +- 4g range */
+#define QMA6100P_8G_RESOLUTION           (977)  /**< Resolution for a +- 8g range */
+#define QMA6100P_16G_RESOLUTION          (1950) /**< Resolution for a +- 16g range */
+#define QMA6100P_32G_RESOLUTION          (3810) /**< Resolution for a +- 32g range */
 /** @} */
 
 /**

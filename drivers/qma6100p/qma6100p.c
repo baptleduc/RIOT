@@ -17,6 +17,7 @@
  */
 
 #include <assert.h>
+#include <stdint.h>
 
 #include "periph/gpio.h"
 #include "periph/i2c.h"
@@ -396,16 +397,19 @@ out:
 }
 
 /**
- * @brief Converts to g a raw data value given the full scale range
+ * @brief Converts to ug a raw data value given the full scale range
  *
- * @param raw_value raw data to convert in g
+ * Multiplies the raw 14-bit signed ADC value by the resolution (ug/LSB)
+ * corresponding to the configured full scale range.
+ *
+ * @param raw_value raw data to convert in ug
  * @param range     full scale range used
  *
- * @return converted to g value
+ * @return converted to ug value
  */
-static float _convert_to_g(int16_t raw_value, qma6100p_range_t range)
+static int32_t _convert_to_ug(int16_t raw_value, qma6100p_range_t range)
 {
-    float resolution = QMA6100P_2G_RESOLUTION;
+    int32_t resolution = QMA6100P_2G_RESOLUTION;
 
     switch (range) {
     case (QMA6100P_RANGE_2G): {
@@ -433,7 +437,7 @@ static float _convert_to_g(int16_t raw_value, qma6100p_range_t range)
         break;
     }
     }
-    return (float)raw_value * resolution;
+    return raw_value * resolution;
 }
 
 int qma6100p_read(const qma6100p_t *dev, qma6100p_data_t *data)
@@ -449,9 +453,9 @@ int qma6100p_read(const qma6100p_t *dev, qma6100p_data_t *data)
         return res;
     }
 
-    data->x = _convert_to_g(raw_data.x, dev->params.range);
-    data->y = _convert_to_g(raw_data.y, dev->params.range);
-    data->z = _convert_to_g(raw_data.z, dev->params.range);
+    data->x = _convert_to_ug(raw_data.x, dev->params.range);
+    data->y = _convert_to_ug(raw_data.y, dev->params.range);
+    data->z = _convert_to_ug(raw_data.z, dev->params.range);
 
     return res;
 }
