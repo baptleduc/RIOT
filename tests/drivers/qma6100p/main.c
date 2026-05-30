@@ -57,7 +57,7 @@ int main(void)
             printf("X: %" PRId32 " ug, Y: %" PRId32 " ug, Z: %" PRId32 " ug\n",
                    data.x, data.y, data.z);
         }
-        else if (res == QMA6100P_NODATA) {
+        else if (res == QMA6100P_NO_NEW_DATA) {
             printf("No new data\n");
         }
         ztimer_sleep(ZTIMER_MSEC, 100);

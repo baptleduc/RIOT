@@ -367,7 +367,7 @@ int qma6100p_read_raw(const qma6100p_t *dev, qma6100p_raw_data_t *data)
 {
     assert(dev && data);
 
-    int res = QMA6100P_DATA_READY;
+    int res;
     uint8_t buf[6];
     uint8_t new_data;
 
@@ -383,13 +383,14 @@ int qma6100p_read_raw(const qma6100p_t *dev, qma6100p_raw_data_t *data)
         (buf[0] | buf[2] | buf[4]) & QMA6100P_NEWDATA_FLAG_MASK;
 
     if (!new_data) {
-        res = QMA6100P_NODATA;
+        res = QMA6100P_NO_NEW_DATA;
         goto out;
     }
 
     data->x = _to_signed14(buf[0], buf[1]);
     data->y = _to_signed14(buf[2], buf[3]);
     data->z = _to_signed14(buf[4], buf[5]);
+    res = QMA6100P_DATA_READY;
 
 out:
     i2c_release(BUS);
@@ -446,6 +447,11 @@ int qma6100p_read(const qma6100p_t *dev, qma6100p_data_t *data)
     qma6100p_raw_data_t raw_data;
 
     res = qma6100p_read_raw(dev, &raw_data);
+
+    if (res == QMA6100P_NO_NEW_DATA) {
+        return res;
+    }
+
     if (res < 0) {
         DEBUG("[qma6100p] read: read raw data failed (%d)\n", res);
         return res;
