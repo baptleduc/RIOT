@@ -18,8 +18,6 @@
 #include <inttypes.h>
 #include <stdio.h>
 
-#include "board.h"
-#include "periph/gpio.h"
 #include "qma6100p.h"
 #include "qma6100p_params.h"
 #include "ztimer.h"
@@ -32,12 +30,6 @@ int main(void)
 {
     qma6100p_data_t data;
     int res;
-
-#ifdef T1000E_3V3_ACC_EN_PIN
-    gpio_init(T1000E_3V3_ACC_EN_PIN, GPIO_OUT);
-    gpio_set(T1000E_3V3_ACC_EN_PIN);
-    ztimer_sleep(ZTIMER_MSEC, 10);
-#endif
 
     ztimer_sleep(ZTIMER_SEC, SLEEP_S);
     puts("QMA6100P accelerometer driver test\n");
@@ -62,4 +54,5 @@ int main(void)
         }
         ztimer_sleep(ZTIMER_MSEC, 100);
     }
+    return 0;
 }
