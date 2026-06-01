@@ -17,6 +17,7 @@
  * @author      Léandre Le Duc <leandre.leduc38@gmail.com>
  */
 
+#include "board.h"
 #include "periph/i2c.h"
 #include "qma6100p.h"
 #include "saul_reg.h"
