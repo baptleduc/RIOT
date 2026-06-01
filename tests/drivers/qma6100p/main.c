@@ -19,6 +19,8 @@
 #include <stdio.h>
 
 #include "qma6100p.h"
+#include "thread.h"
+#include "thread_flags.h"
 
 /* verification: lower ODR to prove the data-ready ISR is locked to the data rate */
 
@@ -34,15 +36,49 @@ static const unsigned expect_hz[] = { 12, 25, 100 };
 #include "qma6100p_params.h"
 #include "ztimer.h"
 
-#define SLEEP_S (5U)
+#define SLEEP_S         (5U)
+
+/* thread flag raised by the data-ready ISR to wake the reader thread */
+#define FLAG_DATA_READY (1u << 0)
 
 /* incremented in ISR context on every data-ready interrupt */
 static volatile unsigned irq_count;
+
+static kernel_pid_t reader_pid = KERNEL_PID_UNDEF;
+static char reader_stack[THREAD_STACKSIZE_MAIN];
+
+static qma6100p_t dev;
 
 static void callback(void *args)
 {
     (void)args;
     irq_count++;
+    if (reader_pid != KERNEL_PID_UNDEF) {
+        thread_flags_set(thread_get(reader_pid), FLAG_DATA_READY);
+    }
+}
+
+/* Wakes on each data-ready signal and reads the sample over I2C. */
+static void *reader_thread(void *arg)
+{
+    (void)arg;
+    qma6100p_data_t data;
+
+    while (1) {
+        thread_flags_wait_any(FLAG_DATA_READY);
+
+        int res = qma6100p_read(&dev, &data);
+        assert(res != QMA6100P_NO_NEW_DATA); /**<interrupt-driven: a wake must always carry fresh data */
+
+        if (res == QMA6100P_DATA_READY) {
+            printf("[data] x=%" PRId32 " y=%" PRId32 " z=%" PRId32 " ug\n",
+                   data.x, data.y, data.z);
+        }
+        else if (res < 0) {
+            printf("[data] read error: %d\n", res);
+        }
+    }
+    return NULL;
 }
 
 static inline unsigned int _measure_irq_hz(void)
@@ -52,7 +88,6 @@ static inline unsigned int _measure_irq_hz(void)
     return irq_count - before;
 }
 
-static qma6100p_t dev;
 static const qma6100p_int_t interrupt = { .params = qma6100p_int_params[0], .cb = callback };
 
 int main(void)
@@ -99,7 +134,7 @@ int main(void)
         res = -1;
         for (try = 0; try < 3; try++) {
             unsigned hz = _measure_irq_hz();
-            bool pass = (expect_hz[i] - 1 <= hz && hz <= expect_hz[i] + 1);
+            int pass = (expect_hz[i] - 1 <= hz && hz <= expect_hz[i] + 1);
             printf("  try %u/3: measured %u Hz (expect ~%u) -> %s\n",
                    try + 1, hz, expect_hz[i], pass ? "PASS" : "off");
             if (pass) {
@@ -118,6 +153,18 @@ int main(void)
     }
 
     puts("\n=== ALL TESTS PASSED ===");
+
+    /* stream samples: ISR signals the reader thread, which reads over I2C */
+    puts("\n--- interrupt-driven streaming ---");
+    reader_pid = thread_create(reader_stack, sizeof(reader_stack),
+                               THREAD_PRIORITY_MAIN - 1, 0,
+                               reader_thread, NULL, "qma_reader");
+    if (reader_pid < 0) {
+        puts("Failed to create reader thread");
+        res = 1;
+        goto out;
+    }
+
     return 0;
 
 out:
