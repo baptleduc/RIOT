@@ -35,9 +35,15 @@ extern "C" {
  * Determined by the AD0 pin level.
  * @{
  */
-#define QMA6100P_I2C_ADDR_LOW  (0x12) /**< AD0 connected to GND */
-#define QMA6100P_I2C_ADDR_HIGH (0x13) /**< AD0 connected to VDD */
+#define QMA6100P_I2C_ADDR_LOW        (0x12) /**< AD0 connected to GND */
+#define QMA6100P_I2C_ADDR_HIGH       (0x13) /**< AD0 connected to VDD */
 /** @} */
+
+/**
+* @def QMA6100P_PARAM_INT_PIN_UNDEF
+* @brief   INT pin default: should be defined by the board or the app.
+*/
+#define QMA6100P_PARAM_INT_PIN_UNDEF (GPIO_UNDEF)
 
 /**
  * @def QMA6100P_PARAM_I2C
@@ -103,8 +109,7 @@ extern "C" {
  *        operation and use polling instead.
  */
 #ifndef QMA6100P_PARAM_INT_PIN
-#  define QMA6100P_PARAM_INT_PIN_UNDEF (GPIO_UNDEF) /**< fallback when board has no INT pin */
-#  define QMA6100P_PARAM_INT_PIN       (QMA6100P_PARAM_INT_PIN_UNDEF)
+#  define QMA6100P_PARAM_INT_PIN (QMA6100P_PARAM_INT_PIN_UNDEF)
 #endif
 
 /**

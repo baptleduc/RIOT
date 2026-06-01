@@ -702,7 +702,7 @@ out:
 
 int qma6100p_set_data_ready_int(qma6100p_t *dev, const qma6100p_int_t *interrupt)
 {
-    assert(dev && interrupt->cb);
+    assert(dev && interrupt->cb && interrupt->params.interrupt_pin != QMA6100P_PARAM_INT_PIN_UNDEF);
 
     if (!gpio_is_valid(interrupt->params.interrupt_pin)) {
         return QMA6100P_GPIO_ERROR;
