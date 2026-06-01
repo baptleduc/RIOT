@@ -197,10 +197,17 @@ extern "C" {
 /** @} */
 
 /**
- * @brief   QMA6100P defaults if not defined for a board or application
+ * @brief   QMA6100P defaults params if not defined for a board or application
  */
 static const qma6100p_params_t qma6100p_params[] = {
     QMA6100P_PARAMS
+};
+
+/**
+ * @brief   QMA6100P defaults interrupt params if not defined for a board or application
+ */
+static const qma6100p_int_params_t qma6100p_int_params[] = {
+    QMA6100P_INT_PARAMS
 };
 
 /**
