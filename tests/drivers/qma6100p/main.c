@@ -36,10 +36,10 @@ static const unsigned expect_hz[] = { 12, 25, 100 };
 #include "qma6100p_params.h"
 #include "ztimer.h"
 
-#define SLEEP_S         (5U)
+#define SLEEP_1S        (1U)
 
 /* thread flag raised by the data-ready ISR to wake the reader thread */
-#define FLAG_DATA_READY (1u << 0)
+#define FLAG_DATA_READY (1U << 0)
 
 /* incremented in ISR context on every data-ready interrupt */
 static volatile unsigned irq_count;
@@ -84,7 +84,7 @@ static void *reader_thread(void *arg)
 static inline unsigned int _measure_irq_hz(void)
 {
     unsigned before = irq_count;
-    ztimer_sleep(ZTIMER_SEC, 1);
+    ztimer_sleep(ZTIMER_SEC, SLEEP_1S);
     return irq_count - before;
 }
 
