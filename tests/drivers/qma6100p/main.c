@@ -1,5 +1,6 @@
 /*
  * SPDX-FileCopyrightText: 2026 Baptiste Le Duc <baptiste.leduc@etik.com>
+ * SPDX-FileCopyrightText: 2026 Léandre Le Duc <leandre.leduc38@gmail.com>
  * SPDX-License-Identifier: LGPL-2.1-only
  */
 
@@ -11,6 +12,7 @@
  * @brief       Test application for the QMA6100P accelerometer driver
  *
  * @author      Baptiste Le Duc <baptiste.leduc@etik.com>
+ * @author      Léandre Le Duc <leandre.leduc38@gmail.com>
  *
  * @}
  */
