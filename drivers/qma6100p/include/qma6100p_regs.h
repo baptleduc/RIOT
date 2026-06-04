@@ -184,34 +184,16 @@ extern "C" {
 /** @} */
 
 /**
- * @name    INT_CFG (0x21) masks — interrupt latch/shadow config
+ * @name    INT_CFG (0x21) masks — interrupt shadow config
  * @{
  */
-#define QMA6100P_INT_CFG_CLR_MASK        BIT(7) /**< INT_STATUS clear behavior mask (@ref qma6100p_int_clr_t) */
 #define QMA6100P_INT_CFG_SHADOW_MASK     BIT(6) /**< data shadowing mode mask (@ref qma6100p_int_shadow_t) */
-#define QMA6100P_INT_CFG_LATCH_MASK      BIT(0) /**< INT latch mode mask (@ref qma6100p_int_latch_t) */
-/** @} */
-
-#define QMA6100P_INT_CFG_CLR_MASK        BIT(7) /**< INT_STATUS clear behavior bit mask */
-#define QMA6100P_INT_CFG_CLR_ON_LATCH    (0)    /**< INT_STATUS bits cleared only if latched */
-#define QMA6100P_INT_CFG_CLR_ON_ANY_READ (1)    /**< INT_STATUS bits cleared on any read */
-/** @} */
-
-/**
- * @name   INT latch mode
- * @{
- */
-#define QMA6100P_INT_CFG_LATCH_MASK      BIT(0) /**< INT latch mode bit mask */
-#define QMA6100P_INT_CFG_NON_LATCH       (0)    /**< INT pulse clears automatically */
-#define QMA6100P_INT_CFG_LATCH           (1)    /**< INT held until ack via @ref qma6100p_ack_int */
 /** @} */
 
 /**
  * @name   INT shadowing function mode
  * @{
  */
-
-#define QMA6100P_INT_CFG_SHADOW_MASK     BIT(6) /**< data shadowing disable bit mask */
 #define QMA6100P_INT_CFG_SHADOW_EN       (0)    /**< shadowing enabled (default) */
 #define QMA6100P_INT_CFG_SHADOW_DIS      (1)    /**< shadowing disabled */
 /** @} */

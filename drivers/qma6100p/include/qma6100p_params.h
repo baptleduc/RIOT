@@ -179,32 +179,6 @@ extern "C" {
 #endif
 
 /**
- * @def QMA6100P_PARAM_INT_LATCH
- * @brief Default interrupt latch mode
- */
-#if IS_ACTIVE(CONFIG_QMA6100P_INT_CFG_NON_LATCH)
-#  define QMA6100P_PARAM_INT_LATCH (QMA6100P_INT_CFG_NON_LATCH)
-#elif IS_ACTIVE(CONFIG_QMA6100P_INT_CFG_LATCH)
-#  define QMA6100P_PARAM_INT_LATCH (QMA6100P_INT_CFG_LATCH)
-#endif
-#ifndef QMA6100P_PARAM_INT_LATCH
-#  define QMA6100P_PARAM_INT_LATCH (QMA6100P_INT_CFG_NON_LATCH)
-#endif
-
-/**
- * @def QMA6100P_PARAM_INT_CLEAR
- * @brief Default interrupt clear behavior
- */
-#if IS_ACTIVE(CONFIG_QMA6100P_INT_CFG_CLR_ON_ANY_READ)
-#  define QMA6100P_PARAM_INT_CLEAR (QMA6100P_INT_CFG_CLR_ON_ANY_READ)
-#elif IS_ACTIVE(CONFIG_QMA6100P_INT_CFG_CLR_ON_LATCH)
-#  define QMA6100P_PARAM_INT_CLEAR (QMA6100P_INT_CFG_CLR_ON_LATCH)
-#endif
-#ifndef QMA6100P_PARAM_INT_CLEAR
-#  define QMA6100P_PARAM_INT_CLEAR (QMA6100P_INT_CFG_CLR_ON_ANY_READ)
-#endif
-
-/**
  * @def QMA6100P_PARAM_INT_SHADOW
  * @brief Default shadow mode for acceleration data registers
  */
@@ -252,8 +226,6 @@ extern "C" {
 #  define QMA6100P_INT_PARAMS { .interrupt_pin = QMA6100P_PARAM_INT_PIN,              \
                                 .active_level_int = QMA6100P_PARAM_INT_ACTIVE_LEVEL,  \
                                 .pin_mode_int = QMA6100P_PARAM_INT_PIN_MODE,          \
-                                .interrupt_latch = QMA6100P_PARAM_INT_LATCH,          \
-                                .interrupt_clear_behavior = QMA6100P_PARAM_INT_CLEAR, \
                                 .interrupt_shadow = QMA6100P_PARAM_INT_SHADOW,        \
                                 .interrupt_pin_num = QMA6100P_PARAM_INT_PIN_NUM }
 #endif

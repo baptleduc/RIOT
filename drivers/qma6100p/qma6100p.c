@@ -537,8 +537,6 @@ static int _set_int_params(qma6100p_t *dev, qma6100p_int_params_t int_params)
 
     READ_REG(QMA6100P_REG_INT_CFG, int_reg, out);
 
-    FIELD_SET(QMA6100P_INT_CFG_CLR_MASK, int_params.interrupt_clear_behavior, int_reg);
-    FIELD_SET(QMA6100P_INT_CFG_LATCH_MASK, int_params.interrupt_latch, int_reg);
     FIELD_SET(QMA6100P_INT_CFG_SHADOW_MASK, int_params.interrupt_shadow, int_reg);
 
     WRITE_REG(QMA6100P_REG_INT_CFG, int_reg, out);
