@@ -55,6 +55,14 @@ extern "C" {
 #endif
 
 /**
+ * @def CONFIG_QMA6100P_I2C_ADDR
+ * @brief Default I2C address (fallback when not configured via Kconfig)
+ */
+#ifndef CONFIG_QMA6100P_I2C_ADDR
+#  define CONFIG_QMA6100P_I2C_ADDR (QMA6100P_I2C_ADDR_LOW)
+#endif
+
+/**
  * @def QMA6100P_PARAM_I2C_ADDR
  * @brief Default I2C address
  */
