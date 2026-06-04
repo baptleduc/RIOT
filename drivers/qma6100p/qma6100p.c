@@ -285,9 +285,35 @@ out:
 }
 
 /**
+ * @brief Configure master clock frequency.
+ *
+ * @param[in,out] dev         device descriptor
+ * @param[in]     mclk        requested master clock
+ *
+ * @return  0 on success
+ * @return  negative error code on I2C failure
+ *
+ * @warning I2C bus must be acquired by the caller
+ */
+static int _qma6100p_set_mclk(const qma6100p_t *dev, qma6100p_mclk_t mclk)
+{
+    int res;
+    uint8_t pm_reg;
+
+    READ_REG(QMA6100P_REG_PM, pm_reg, out);
+
+    FIELD_SET(QMA6100P_PM_MCLK_MASK, mclk, pm_reg);
+
+    WRITE_REG(QMA6100P_REG_PM, pm_reg, out);
+
+out:
+    return res;
+}
+
+/**
  * @brief Set all the common parameter requested by the user
  *
- * Sets full scale range, output data range from @p params
+ * Sets full scale range, output data rate and master clock from @p params
  *
  * @param[in,out] dev         device descriptor
  * @param[in]     params      configuration parameters
@@ -307,6 +333,11 @@ static int _qma6100p_set_common_params(const qma6100p_t *dev, const qma6100p_par
     }
 
     res = _qma6100p_set_range(dev, params->range);
+    if (res < 0) {
+        goto out;
+    }
+
+    res = _qma6100p_set_mclk(dev, params->mclk);
     if (res < 0) {
         goto out;
     }

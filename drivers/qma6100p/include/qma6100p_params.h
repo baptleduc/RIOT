@@ -124,14 +124,6 @@ extern "C" {
 #endif
 
 /**
- * @def QMA6100P_PARAM_OFFSET
- * @brief Default per-axis calibration offset (X, Y, Z) in raw LSB units
- */
-#ifndef QMA6100P_PARAM_OFFSET
-#  define QMA6100P_PARAM_OFFSET { 0, 0, 0 }
-#endif
-
-/**
  * @def QMA6100P_PARAM_MODE
  * @brief Default operating mode
  */
@@ -214,7 +206,6 @@ extern "C" {
                             .rate = QMA6100P_PARAM_RATE,     \
                             .range = QMA6100P_PARAM_RANGE,   \
                             .mclk = QMA6100P_PARAM_MCLK,     \
-                            .offset = QMA6100P_PARAM_OFFSET, \
                             .mode = QMA6100P_PARAM_MODE }
 #endif
 

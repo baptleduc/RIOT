@@ -174,7 +174,6 @@ typedef struct {
     qma6100p_odr_t rate;    /**< output data rate */
     qma6100p_range_t range; /**< full-scale range */
     qma6100p_mclk_t mclk;   /**< master clock */
-    uint8_t offset[3];      /**< user offset correction for X, Y, Z [applied at init] */
     qma6100p_mode_t mode;   /**< operating mode */
 } qma6100p_params_t;
 
@@ -207,8 +206,8 @@ typedef struct {
 /**
  * @brief   Initialize the QMA6100P accelerometer driver
  *
- * Applies offset correction from @p params, sets ODR and range, then
- * puts the device into active mode
+ * Runs the init sequence, sets ODR, range and master clock from @p params,
+ * then puts the device into the configured mode
  *
  * @param[out] dev          device descriptor of accelerometer to initialize
  * @param[in]  params       configuration parameters
