@@ -143,6 +143,12 @@ static int _qma6100p_init_test(i2c_t i2c, uint8_t addr)
         DEBUG("[qma6100p] init - error: read chip id test failed (reg=%02x)\n", reg);
         goto out;
     }
+
+    if ((reg & QMA6100P_CHIP_ID_MASK) != QMA6100P_CHIP_ID_VAL) {
+        DEBUG("[qma6100p] init - error: wrong chip id 0x%02x\n", reg);
+        res = QMA6100P_NODEV;
+        goto out;
+    }
 out:
     i2c_release(i2c);
     return res;
