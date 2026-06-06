@@ -27,7 +27,7 @@
 #include "qma6100p_regs.h"
 #include "ztimer.h"
 
-#define ENABLE_DEBUG 1
+#define ENABLE_DEBUG 0
 #include "debug.h"
 
 #define BUS                   (dev->params.i2c)
@@ -141,6 +141,12 @@ static int _qma6100p_init_test(i2c_t i2c, uint8_t addr)
     int res = _read_reg(i2c, addr, QMA6100P_REG_CHIP_ID, &reg);
     if (res < 0) {
         DEBUG("[qma6100p] init - error: read chip id test failed (reg=%02x)\n", reg);
+        goto out;
+    }
+
+    if ((reg & QMA6100P_CHIP_ID_MASK) != QMA6100P_CHIP_ID_VAL) {
+        DEBUG("[qma6100p] init - error: wrong chip id 0x%02x\n", reg);
+        res = QMA6100P_NODEV;
         goto out;
     }
 out:
@@ -279,9 +285,35 @@ out:
 }
 
 /**
+ * @brief Configure master clock frequency.
+ *
+ * @param[in,out] dev         device descriptor
+ * @param[in]     mclk        requested master clock
+ *
+ * @return  0 on success
+ * @return  negative error code on I2C failure
+ *
+ * @warning I2C bus must be acquired by the caller
+ */
+static int _qma6100p_set_mclk(const qma6100p_t *dev, qma6100p_mclk_t mclk)
+{
+    int res;
+    uint8_t pm_reg;
+
+    READ_REG(QMA6100P_REG_PM, pm_reg, out);
+
+    FIELD_SET(QMA6100P_PM_MCLK_MASK, mclk, pm_reg);
+
+    WRITE_REG(QMA6100P_REG_PM, pm_reg, out);
+
+out:
+    return res;
+}
+
+/**
  * @brief Set all the common parameter requested by the user
  *
- * Sets full scale range, output data range from @p params
+ * Sets full scale range, output data rate and master clock from @p params
  *
  * @param[in,out] dev         device descriptor
  * @param[in]     params      configuration parameters
@@ -301,6 +333,11 @@ static int _qma6100p_set_common_params(const qma6100p_t *dev, const qma6100p_par
     }
 
     res = _qma6100p_set_range(dev, params->range);
+    if (res < 0) {
+        goto out;
+    }
+
+    res = _qma6100p_set_mclk(dev, params->mclk);
     if (res < 0) {
         goto out;
     }
@@ -537,8 +574,6 @@ static int _set_int_params(qma6100p_t *dev, qma6100p_int_params_t int_params)
 
     READ_REG(QMA6100P_REG_INT_CFG, int_reg, out);
 
-    FIELD_SET(QMA6100P_INT_CFG_CLR_MASK, int_params.interrupt_clear_behavior, int_reg);
-    FIELD_SET(QMA6100P_INT_CFG_LATCH_MASK, int_params.interrupt_latch, int_reg);
     FIELD_SET(QMA6100P_INT_CFG_SHADOW_MASK, int_params.interrupt_shadow, int_reg);
 
     WRITE_REG(QMA6100P_REG_INT_CFG, int_reg, out);

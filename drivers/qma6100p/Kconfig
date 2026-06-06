@@ -106,29 +106,6 @@ config QMA6100P_INTPIN_OPEN_DRAIN
 endchoice
 
 choice
-    bool "Interrupt latch mode"
-    default QMA6100P_INT_CFG_NON_LATCH
-    help
-        Non-latching: INT pulse clears automatically.
-        Latching: INT is held until acknowledged via qma6100p_ack_int().
-config QMA6100P_INT_CFG_NON_LATCH
-    bool "Non-latching (auto-cleared)"
-config QMA6100P_INT_CFG_LATCH
-    bool "Latching (held until acknowledged)"
-endchoice
-
-choice
-    bool "Interrupt clear behavior"
-    default QMA6100P_INT_CFG_CLR_ON_ANY_READ
-    help
-        Select when INT_STATUS bits are cleared.
-config QMA6100P_INT_CFG_CLR_ON_ANY_READ
-    bool "Clear on any register read"
-config QMA6100P_INT_CFG_CLR_ON_LATCH
-    bool "Clear only when latched"
-endchoice
-
-choice
     bool "Acceleration data shadow mode"
     default QMA6100P_INT_CFG_SHADOW_DIS
     help

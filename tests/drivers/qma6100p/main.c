@@ -96,7 +96,7 @@ int main(void)
 {
     int res;
 
-    ztimer_sleep(ZTIMER_SEC, SLEEP_S);
+    ztimer_sleep(ZTIMER_SEC, SLEEP_1S);
     puts("=== QMA6100P accelerometer driver test ===");
     printf("[init] I2C_DEV(%d) addr 0x%02x ... ",
            (int)qma6100p_params[0].i2c, qma6100p_params[0].addr);
