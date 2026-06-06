@@ -222,10 +222,10 @@ extern "C" {
  * @brief Default interrupt configuration parameters structure for QMA6100P devices
  */
 #ifndef QMA6100P_INT_PARAMS
-#  define QMA6100P_INT_PARAMS { .interrupt_pin = QMA6100P_PARAM_INT_PIN,              \
-                                .active_level_int = QMA6100P_PARAM_INT_ACTIVE_LEVEL,  \
-                                .pin_mode_int = QMA6100P_PARAM_INT_PIN_MODE,          \
-                                .interrupt_shadow = QMA6100P_PARAM_INT_SHADOW,        \
+#  define QMA6100P_INT_PARAMS { .interrupt_pin = QMA6100P_PARAM_INT_PIN,             \
+                                .active_level_int = QMA6100P_PARAM_INT_ACTIVE_LEVEL, \
+                                .pin_mode_int = QMA6100P_PARAM_INT_PIN_MODE,         \
+                                .interrupt_shadow = QMA6100P_PARAM_INT_SHADOW,       \
                                 .interrupt_pin_num = QMA6100P_PARAM_INT_PIN_NUM }
 #endif
 
