@@ -48,10 +48,16 @@ extern "C" {
     } while (0)
 
 /**
- * @name    Register addresses (QST-PD-B002-22 Table 14 / section 9)
+ * @name    Register addresses
+ * @{
+ */
+
+/**
+ * @name    Chip ID register (0x00)
  * @{
  */
 #define QMA6100P_REG_CHIP_ID           (0x00) /**< Chip ID */
+/** @} */
 
 /**
  * @name    Acceleration data registers (0x01–0x06)
@@ -97,6 +103,7 @@ extern "C" {
 #define QMA6100P_REG_INT2_MAP1         (0x1C) /**< INT2 map: no_mot/FIFO/data/q_tap/any_mot */
 #define QMA6100P_REG_INTPIN_CONF       (0x20) /**< INT pin config (OD/LVL) */
 #define QMA6100P_REG_INT_CFG           (0x21) /**< Interrupt latch/shadow/I2C config */
+/** @} */
 /** @} */
 
 /**
