@@ -509,8 +509,6 @@ int qma6100p_read(const qma6100p_t *dev, qma6100p_data_t *data)
 }
 
 /**
- * TODO: Implement this
- *
  * @brief Disable all configured interrupts on the device
  *
  * @param[in] dev  device descriptor
@@ -518,12 +516,16 @@ int qma6100p_read(const qma6100p_t *dev, qma6100p_data_t *data)
  * @return  0 on success
  * @return  negative error code on failure
  *
+ * @warning I2C bus must be acquired by the caller
  */
-static int _disable_set_interrupt(const qma6100p_t *dev)
+static int _disable_all_interrupt(const qma6100p_t *dev)
 {
-    (void)dev;
-    NOT_YET_IMPLEMENTED();
-    return 0;
+    int res;
+
+    WRITE_REG(QMA6100P_REG_INT_EN1, 0x00, out);
+
+out:
+    return res;
 }
 
 /**
@@ -544,7 +546,7 @@ static int _enter_ulps_mode(const qma6100p_t *dev)
     WRITE_REG(QMA6100P_REG_ULPS, 0x0F, out);
     WRITE_REG(QMA6100P_REG_TST0_ANA, 0x00, out);
 
-    res = _disable_set_interrupt(dev);
+    res = _disable_all_interrupt(dev);
     if (res < 0) {
         DEBUG("[qma6100p] %s: failed to disable interrupt\n", __func__);
         goto out;
