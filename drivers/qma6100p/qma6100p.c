@@ -746,7 +746,7 @@ int qma6100p_set_data_ready_int(qma6100p_t *dev, qma6100p_int_pin_num_t line,
         return QMA6100P_GPIO_ERROR;
     }
 
-    uint8_t map_reg;
+    uint8_t map_reg = 0;
 
     i2c_acquire(BUS);
 
