@@ -154,6 +154,51 @@ int main(void)
                i + 1, (unsigned)ARRAY_SIZE(rates), expect_hz[i]);
     }
 
+    puts("\n--- ULPS mode test ---");
+
+    /* enter ULPS: IRQs must stop */
+    res = qma6100p_set_low_power(&dev, true);
+    if (res < 0) {
+        printf("[ULPS] FAILED to enter ULPS (res=%d)\n", res);
+        goto out;
+    }
+
+    irq_count = 0;
+    unsigned hz_ulps = _measure_irq_hz();
+
+    printf("[ULPS] in ULPS: %u IRQs/s (expect 0) -> %s\n",
+           hz_ulps, hz_ulps == 0 ? "PASS" : "FAIL");
+    if (hz_ulps != 0) {
+        res = -1;
+        goto out;
+    }
+
+    /* wake up: ULPS disables all interrupts, so re-enable data-ready */
+    res = qma6100p_set_low_power(&dev, false);
+    if (res < 0) {
+        printf("[ULPS] FAILED to exit ULPS (res=%d)\n", res);
+        goto out;
+    }
+    res = qma6100p_set_data_ready_int(&dev, &interrupt);
+    if (res < 0) {
+        printf("[ULPS] FAILED to re-enable data-ready int after wake (res=%d)\n", res);
+        goto out;
+    }
+
+    irq_count = 0;
+    unsigned hz_after = _measure_irq_hz();
+
+    unsigned expect_hz_wake = expect_hz[2];
+    int pass_wake = (expect_hz_wake - 1 <= hz_after && hz_after <= expect_hz_wake + 1);
+    printf("[ULPS] after wake: %u IRQs/s (expect ~%u) -> %s\n",
+           hz_after, expect_hz_wake, pass_wake ? "PASS" : "FAIL");
+    if (!pass_wake) {
+        res = -1;
+        goto out;
+    }
+
+    puts("[ULPS] PASS");
+
     puts("\n=== ALL TESTS PASSED ===");
 
     /* stream samples: ISR signals the reader thread, which reads over I2C */
