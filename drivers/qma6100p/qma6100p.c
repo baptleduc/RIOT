@@ -35,9 +35,6 @@
 
 #define QMA6100P_OTP_LOAD_RETRIES (10U)
 
-/** Print out a message that function is not yet implemented */
-#define NOT_YET_IMPLEMENTED()     DEBUG("%s not yet implemented\n", __func__)
-
 /**
  * @brief   Read a register and jump to a label on failure
  *
