@@ -104,10 +104,10 @@ extern "C" {
 /** @} */
 
 /**
- * @name    Accelerometer (QMA6100P) interrupt pin
+ * @name    Accelerometer (QMA6100P) configuration
  * @{
  */
-#define T1000E_ACC_INT_PIN          GPIO_PIN(1, 2)  /**< Accelerometer interrupt pin */
+#define QMA6100P_PARAM_INT1_PIN     GPIO_PIN(1, 2)  /**< Accelerometer interrupt pin */
 /** @} */
 
 #ifdef __cplusplus
