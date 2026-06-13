@@ -30,11 +30,10 @@
 #define ENABLE_DEBUG 0
 #include "debug.h"
 
-#define BUS                   (dev->params.i2c)
-#define ADDR                  (dev->params.addr)
+#define BUS                       (dev->params.i2c)
+#define ADDR                      (dev->params.addr)
 
-/** Print out a message that function is not yet implemented */
-#define NOT_YET_IMPLEMENTED() DEBUG("%s not yet implemented\n", __func__)
+#define QMA6100P_OTP_LOAD_RETRIES (10U)
 
 /**
  * @brief   Read a register and jump to a label on failure
@@ -176,11 +175,22 @@ static int _soft_reset(const qma6100p_t *dev)
 
     uint8_t nvm_status;
 
-    /* Wait for OTP to load */
+    /* Wait for OTP to load, datasheet specifies no explicit timeout but
+     * loading should complete within a few ms after reset */
+    unsigned retries = QMA6100P_OTP_LOAD_RETRIES;
+
     do {
         READ_REG(QMA6100P_REG_NVM, nvm_status, out);
-    } while ((nvm_status & (QMA6100P_NVM_LOAD_DONE | QMA6100P_NVM_RDY)) !=
-             (QMA6100P_NVM_LOAD_DONE | QMA6100P_NVM_RDY));
+        if ((nvm_status & (QMA6100P_NVM_LOAD_DONE | QMA6100P_NVM_RDY)) ==
+            (QMA6100P_NVM_LOAD_DONE | QMA6100P_NVM_RDY)) {
+            break;
+        }
+    } while (--retries);
+
+    if (!retries) {
+        res = QMA6100P_TIMEOUT;
+        goto out;
+    }
 
 out:
     return res;
@@ -211,7 +221,7 @@ static int _qma6100p_run_init_seq(const qma6100p_t *dev)
 
     uint8_t pm = 0;
 
-    FIELD_SET(QMA6100P_PM_MODE_MASK, QMA6100P_MODE_ACTIVE, pm);
+    FIELD_SET(QMA6100P_PM_MODE_MASK, 1, pm);
     WRITE_REG(QMA6100P_REG_PM, pm, out);
 
     FIELD_SET(QMA6100P_PM_MCLK_MASK, QMA6100P_PM_MCLK_51K2, pm);
@@ -366,12 +376,6 @@ int qma6100p_init(qma6100p_t *dev, const qma6100p_params_t *params)
         return res;
     }
 
-    res = qma6100p_set_mode(dev, params->mode);
-    if (res < 0) {
-        DEBUG("[qma6100p] init: set mode failed (%d)\n", res);
-        return res;
-    }
-
     res = _qma6100p_set_common_params(dev, params);
     if (res < 0) {
         DEBUG("[qma6100p] init: set common parameters failed (%d)\n", res);
@@ -509,8 +513,6 @@ int qma6100p_read(const qma6100p_t *dev, qma6100p_data_t *data)
 }
 
 /**
- * TODO: Implement this
- *
  * @brief Disable all configured interrupts on the device
  *
  * @param[in] dev  device descriptor
@@ -518,12 +520,16 @@ int qma6100p_read(const qma6100p_t *dev, qma6100p_data_t *data)
  * @return  0 on success
  * @return  negative error code on failure
  *
+ * @warning I2C bus must be acquired by the caller
  */
-static int _disable_set_interrupt(const qma6100p_t *dev)
+static int _disable_all_interrupt(const qma6100p_t *dev)
 {
-    (void)dev;
-    NOT_YET_IMPLEMENTED();
-    return 0;
+    int res;
+
+    WRITE_REG(QMA6100P_REG_INT_EN1, 0x00, out);
+
+out:
+    return res;
 }
 
 /**
@@ -533,24 +539,25 @@ static int _disable_set_interrupt(const qma6100p_t *dev)
  *
  * @return  0 on success
  * @return  negative error code on I2C failure
- *
- * @warning I2C bus must be acquired by the caller
  */
 static int _enter_ulps_mode(const qma6100p_t *dev)
 {
     int res = QMA6100P_OK;
 
+    i2c_acquire(BUS);
+
     WRITE_REG(QMA6100P_REG_PM, 0x87, out);
     WRITE_REG(QMA6100P_REG_ULPS, 0x0F, out);
     WRITE_REG(QMA6100P_REG_TST0_ANA, 0x00, out);
 
-    res = _disable_set_interrupt(dev);
+    res = _disable_all_interrupt(dev);
     if (res < 0) {
         DEBUG("[qma6100p] %s: failed to disable interrupt\n", __func__);
         goto out;
     }
 
 out:
+    i2c_release(BUS);
     return res;
 }
 
@@ -582,60 +589,33 @@ out:
     return res;
 }
 
-/**
- * @brief Set MODE bit to 1 in PM register to enter active mode
- *
- * @param[in] dev  device descriptor
- * @param[in] pm   current PM register
- *
- * @return  QMA6100P_OK on success
- * @return  negative error code on I2C failure
- */
-static inline int qma6100p_enter_active_mode(const qma6100p_t *dev, uint8_t pm)
+int qma6100p_set_low_power(qma6100p_t *dev, bool low_power)
 {
-    FIELD_SET(QMA6100P_PM_MODE_MASK, 1, pm);
-    return _write_reg(BUS, ADDR, QMA6100P_REG_PM, pm);
-}
-
-int qma6100p_set_mode(qma6100p_t *dev, qma6100p_mode_t mode)
-{
-    int res;
-    uint8_t pm;
-
     assert(dev);
 
-    i2c_acquire(BUS);
+    int res;
 
-    READ_REG(QMA6100P_REG_PM, pm, out);
-
-    switch (mode) {
-    case QMA6100P_MODE_ULPS:
+    if (low_power) {
         res = _enter_ulps_mode(dev);
         if (res < 0) {
-            DEBUG("[qma6100p] set_mode - error: failed to enter ulps mode\n");
-            goto out;
+            DEBUG("[qma6100p] set_low_power - error: failed to enter ulps (%d)\n", res);
         }
-        break;
-
-    case QMA6100P_MODE_ACTIVE:
-        res = qma6100p_enter_active_mode(dev, pm);
-        if (res < 0) {
-            DEBUG("[qma6100p] set_mode - error: failed to enter active mode\n");
-            goto out;
-        }
-        break;
-
-    case QMA6100P_MODE_INTERMEDIATE:
-    default:
-        res = QMA6100P_INVALID_ARG;
-        DEBUG("[qma6100p] set_mode: mode not supported\n");
         goto out;
     }
 
-    dev->params.mode = mode;
+    /* Exiting ULPS requires a full soft reset per spec */
+    res = _qma6100p_run_init_seq(dev);
+    if (res < 0) {
+        DEBUG("[qma6100p] set_low_power - error: init sequence failed (%d)\n", res);
+        goto out;
+    }
+
+    res = _qma6100p_set_common_params(dev, &dev->params);
+    if (res < 0) {
+        DEBUG("[qma6100p] set_low_power - error: failed to restore params (%d)\n", res);
+    }
 
 out:
-    i2c_release(BUS);
     return res;
 }
 
@@ -743,7 +723,7 @@ int qma6100p_set_data_ready_int(qma6100p_t *dev, const qma6100p_int_t *interrupt
         return QMA6100P_GPIO_ERROR;
     }
 
-    uint8_t map_reg;
+    uint8_t map_reg = 0;
 
     i2c_acquire(BUS);
 
