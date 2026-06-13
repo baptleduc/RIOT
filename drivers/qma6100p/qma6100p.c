@@ -30,11 +30,13 @@
 #define ENABLE_DEBUG 0
 #include "debug.h"
 
-#define BUS                   (dev->params.i2c)
-#define ADDR                  (dev->params.addr)
+#define BUS                       (dev->params.i2c)
+#define ADDR                      (dev->params.addr)
+
+#define QMA6100P_OTP_LOAD_RETRIES (10U)
 
 /** Print out a message that function is not yet implemented */
-#define NOT_YET_IMPLEMENTED() DEBUG("%s not yet implemented\n", __func__)
+#define NOT_YET_IMPLEMENTED()     DEBUG("%s not yet implemented\n", __func__)
 
 /**
  * @brief   Read a register and jump to a label on failure
@@ -176,11 +178,22 @@ static int _soft_reset(const qma6100p_t *dev)
 
     uint8_t nvm_status;
 
-    /* Wait for OTP to load */
+    /* Wait for OTP to load, datasheet specifies no explicit timeout but
+     * loading should complete within a few ms after reset */
+    unsigned retries = QMA6100P_OTP_LOAD_RETRIES;
+
     do {
         READ_REG(QMA6100P_REG_NVM, nvm_status, out);
-    } while ((nvm_status & (QMA6100P_NVM_LOAD_DONE | QMA6100P_NVM_RDY)) !=
-             (QMA6100P_NVM_LOAD_DONE | QMA6100P_NVM_RDY));
+        if ((nvm_status & (QMA6100P_NVM_LOAD_DONE | QMA6100P_NVM_RDY)) ==
+            (QMA6100P_NVM_LOAD_DONE | QMA6100P_NVM_RDY)) {
+            break;
+        }
+    } while (--retries);
+
+    if (!retries) {
+        res = QMA6100P_TIMEOUT;
+        goto out;
+    }
 
 out:
     return res;

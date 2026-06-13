@@ -48,6 +48,7 @@ enum {
     QMA6100P_NODEV = -2,       /**< no QMA6100P device found on the bus */
     QMA6100P_INVALID_ARG = -3, /**< invalid argument */
     QMA6100P_GPIO_ERROR = -4,  /**< GPIO error */
+    QMA6100P_TIMEOUT = -5,     /**< operation timed out */
 };
 
 /**
