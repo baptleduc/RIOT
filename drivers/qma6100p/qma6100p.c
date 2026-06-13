@@ -221,7 +221,7 @@ static int _qma6100p_run_init_seq(const qma6100p_t *dev)
 
     uint8_t pm = 0;
 
-    FIELD_SET(QMA6100P_PM_MODE_MASK, QMA6100P_MODE_ACTIVE, pm);
+    FIELD_SET(QMA6100P_PM_MODE_MASK, 1, pm);
     WRITE_REG(QMA6100P_REG_PM, pm, out);
 
     FIELD_SET(QMA6100P_PM_MCLK_MASK, QMA6100P_PM_MCLK_51K2, pm);
@@ -373,12 +373,6 @@ int qma6100p_init(qma6100p_t *dev, const qma6100p_params_t *params)
     res = _qma6100p_run_init_seq(dev);
     if (res < 0) {
         DEBUG("[qma6100p] init: init sequence failed (%d)\n", res);
-        return res;
-    }
-
-    res = qma6100p_set_mode(dev, params->mode);
-    if (res < 0) {
-        DEBUG("[qma6100p] init: set mode failed (%d)\n", res);
         return res;
     }
 
@@ -545,12 +539,12 @@ out:
  *
  * @return  0 on success
  * @return  negative error code on I2C failure
- *
- * @warning I2C bus must be acquired by the caller
  */
 static int _enter_ulps_mode(const qma6100p_t *dev)
 {
     int res = QMA6100P_OK;
+
+    i2c_acquire(BUS);
 
     WRITE_REG(QMA6100P_REG_PM, 0x87, out);
     WRITE_REG(QMA6100P_REG_ULPS, 0x0F, out);
@@ -563,6 +557,7 @@ static int _enter_ulps_mode(const qma6100p_t *dev)
     }
 
 out:
+    i2c_release(BUS);
     return res;
 }
 
@@ -594,60 +589,33 @@ out:
     return res;
 }
 
-/**
- * @brief Set MODE bit to 1 in PM register to enter active mode
- *
- * @param[in] dev  device descriptor
- * @param[in] pm   current PM register
- *
- * @return  QMA6100P_OK on success
- * @return  negative error code on I2C failure
- */
-static inline int qma6100p_enter_active_mode(const qma6100p_t *dev, uint8_t pm)
+int qma6100p_set_low_power(qma6100p_t *dev, bool low_power)
 {
-    FIELD_SET(QMA6100P_PM_MODE_MASK, 1, pm);
-    return _write_reg(BUS, ADDR, QMA6100P_REG_PM, pm);
-}
-
-int qma6100p_set_mode(qma6100p_t *dev, qma6100p_mode_t mode)
-{
-    int res;
-    uint8_t pm;
-
     assert(dev);
 
-    i2c_acquire(BUS);
+    int res;
 
-    READ_REG(QMA6100P_REG_PM, pm, out);
-
-    switch (mode) {
-    case QMA6100P_MODE_ULPS:
+    if (low_power) {
         res = _enter_ulps_mode(dev);
         if (res < 0) {
-            DEBUG("[qma6100p] set_mode - error: failed to enter ulps mode\n");
-            goto out;
+            DEBUG("[qma6100p] set_low_power - error: failed to enter ulps (%d)\n", res);
         }
-        break;
-
-    case QMA6100P_MODE_ACTIVE:
-        res = qma6100p_enter_active_mode(dev, pm);
-        if (res < 0) {
-            DEBUG("[qma6100p] set_mode - error: failed to enter active mode\n");
-            goto out;
-        }
-        break;
-
-    case QMA6100P_MODE_INTERMEDIATE:
-    default:
-        res = QMA6100P_INVALID_ARG;
-        DEBUG("[qma6100p] set_mode: mode not supported\n");
         goto out;
     }
 
-    dev->params.mode = mode;
+    /* Exiting ULPS requires a full soft reset per spec */
+    res = _qma6100p_run_init_seq(dev);
+    if (res < 0) {
+        DEBUG("[qma6100p] set_low_power - error: init sequence failed (%d)\n", res);
+        goto out;
+    }
+
+    res = _qma6100p_set_common_params(dev, &dev->params);
+    if (res < 0) {
+        DEBUG("[qma6100p] set_low_power - error: failed to restore params (%d)\n", res);
+    }
 
 out:
-    i2c_release(BUS);
     return res;
 }
 
