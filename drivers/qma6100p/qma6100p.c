@@ -175,8 +175,8 @@ static int _soft_reset(const qma6100p_t *dev)
 
     uint8_t nvm_status;
 
-    /* Wait for OTP to load, datasheet specifies no explicit timeout but
-     * loading should complete within a few ms after reset */
+    /* Poll for OTP load completion, datasheet specifies no explicit timeout.
+     * Loading completes within a few I2C reads after reset */
     unsigned retries = QMA6100P_OTP_LOAD_RETRIES;
 
     do {
@@ -221,6 +221,7 @@ static int _qma6100p_run_init_seq(const qma6100p_t *dev)
 
     uint8_t pm = 0;
 
+    /* Enters Active Mode */
     FIELD_SET(QMA6100P_PM_MODE_MASK, 1, pm);
     WRITE_REG(QMA6100P_REG_PM, pm, out);
 
@@ -525,9 +526,7 @@ int qma6100p_read(const qma6100p_t *dev, qma6100p_data_t *data)
 static int _disable_all_interrupt(const qma6100p_t *dev)
 {
     int res;
-
     WRITE_REG(QMA6100P_REG_INT_EN1, 0x00, out);
-
 out:
     return res;
 }
@@ -588,7 +587,16 @@ out:
     return res;
 }
 
-int qma6100p_set_low_power(qma6100p_t *dev, bool low_power)
+/**
+ * @brief Switch the device between Ultra-Low Power State (ULPS) and active mode
+ *
+ * @param[in,out] dev        device descriptor
+ * @param[in]     low_power  true to enter ULPS, false to enter active mode
+ *
+ * @return  0 on success
+ * @return  negative error code on failure
+ */
+static int _qma6100p_set_power_mode(qma6100p_t *dev, bool low_power)
 {
     assert(dev);
 
@@ -597,25 +605,35 @@ int qma6100p_set_low_power(qma6100p_t *dev, bool low_power)
     if (low_power) {
         res = _enter_ulps_mode(dev);
         if (res < 0) {
-            DEBUG("[qma6100p] set_low_power - error: failed to enter ulps (%d)\n", res);
+            DEBUG("[qma6100p] set_power_mode - error: failed to enter ulps (%d)\n", res);
         }
         goto out;
     }
 
-    /* Exiting ULPS requires a full soft reset per spec */
+    /* Exiting ULPS requires a full soft reset according to the spec */
     res = _qma6100p_run_init_seq(dev);
     if (res < 0) {
-        DEBUG("[qma6100p] set_low_power - error: init sequence failed (%d)\n", res);
+        DEBUG("[qma6100p] set_power_mode - error: init sequence failed (%d)\n", res);
         goto out;
     }
 
     res = _qma6100p_set_common_params(dev, &dev->params);
     if (res < 0) {
-        DEBUG("[qma6100p] set_low_power - error: failed to restore params (%d)\n", res);
+        DEBUG("[qma6100p] set_power_mode - error: failed to restore params (%d)\n", res);
     }
 
 out:
     return res;
+}
+
+int qma6100p_set_low_power(qma6100p_t *dev)
+{
+    return _qma6100p_set_power_mode(dev, true);
+}
+
+int qma6100p_set_active_mode(qma6100p_t *dev)
+{
+    return _qma6100p_set_power_mode(dev, false);
 }
 
 /**
@@ -719,8 +737,7 @@ int qma6100p_set_data_ready_int(qma6100p_t *dev, qma6100p_int_pin_num_t line,
 {
     assert(dev && cb);
 
-    gpio_t pin = (line == QMA6100P_INT2) ? dev->params.int2_pin
-                                         : dev->params.int1_pin;
+    gpio_t pin = (line == QMA6100P_INT2) ? dev->params.int2_pin : dev->params.int1_pin;
 
     if (!gpio_is_valid(pin)) {
         return QMA6100P_GPIO_ERROR;

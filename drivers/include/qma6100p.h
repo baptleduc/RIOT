@@ -179,8 +179,10 @@ typedef struct {
 /**
  * @brief   Initialize the QMA6100P accelerometer driver
  *
- * Runs the init sequence, sets ODR, range and master clock from @p params,
- * then puts the device into the configured mode
+ * Runs the init sequence, sets ODR, range and master clock from @p params.
+ *
+ * The device is left in active mode; call @ref qma6100p_set_low_power
+ * afterwards to enter Ultra-Low Power State (ULPS) if needed.
  *
  * @param[out] dev          device descriptor of accelerometer to initialize
  * @param[in]  params       configuration parameters
@@ -192,18 +194,28 @@ typedef struct {
 int qma6100p_init(qma6100p_t *dev, const qma6100p_params_t *params);
 
 /**
- * @brief   Set low power mode
- *
- * Switches between Ultra-Low Power State (ULPS) and active mode.
+ * @brief   Enter Ultra-Low Power State (ULPS)
  *
  * @param[in,out]  dev        device descriptor of accelerometer
- * @param[in]      low_power  true to enter ULPS, false to enter active mode
  *
  * @return                   QMA6100P_OK on success
  * @return                   QMA6100P_NOI2C if I2C transaction failed
  * @return                   QMA6100P_NODEV if device not found on bus
  */
-int qma6100p_set_low_power(qma6100p_t *dev, bool low_power);
+int qma6100p_set_low_power(qma6100p_t *dev);
+
+/**
+ * @brief   Enter active mode
+ *
+ * Exits Ultra-Low Power State (ULPS) and restores the configured parameters.
+ *
+ * @param[in,out]  dev        device descriptor of accelerometer
+ *
+ * @return                   QMA6100P_OK on success
+ * @return                   QMA6100P_NOI2C if I2C transaction failed
+ * @return                   QMA6100P_NODEV if device not found on bus
+ */
+int qma6100p_set_active_mode(qma6100p_t *dev);
 
 /**
  * @brief   Read raw accelerometer data (ADC counts)
