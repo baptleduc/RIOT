@@ -1,0 +1,29 @@
+# SPDX-FileCopyrightText: 2026 Léandre Le Duc <leandre.leduc@etik.com>
+# SPDX-License-Identifier: LGPL-2.1-only
+
+config BOARD
+    default "seeedstudio-sensecap-solar-p1" if BOARD_SEEEDSTUDIO_SENSECAP_SOLAR_P1
+
+config BOARD_SEEEDSTUDIO_SENSECAP_SOLAR_P1
+    bool
+    default y
+    select BOARD_COMMON_NRF52
+    select CPU_MODEL_NRF52840XXAA
+
+config SOLAR_P1_ENABLE_BAT_SENSE
+    bool "Enable the battery voltage divider at boot"
+    default y
+    help
+        Drive the low side of the battery voltage divider, without which the
+        ADC line reads floating. Disable to save the leakage current of the
+        divider and manage the pin at runtime instead.
+
+config SOLAR_P1_ENABLE_GNSS
+    bool "Power the GNSS module at boot"
+    default n
+    help
+        Power the L76K GNSS module at boot. The module is only populated on
+        the P1-Pro variant, and it draws more than the solar panel provides
+        on an overcast day, so it is left unpowered by default.
+
+source "$(RIOTBOARD)/common/nrf52/Kconfig"

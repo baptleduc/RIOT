@@ -1,0 +1,2 @@
+# stdio is provided by the USB CDC ACM interface, no UART is exposed
+UF2_SOFTDEV ?= SD730

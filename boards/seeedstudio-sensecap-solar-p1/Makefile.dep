@@ -1,0 +1,18 @@
+ifneq (,$(filter saul_default,$(USEMODULE)))
+  USEMODULE += saul_adc
+  USEMODULE += saul_gpio
+endif
+
+ifneq (,$(filter netdev_default,$(USEMODULE)))
+  USEMODULE += sx1262
+endif
+
+ifneq (,$(filter sx126x,$(USEMODULE)))
+  USEMODULE += sx126x_rf_switch
+  USEMODULE += sx126x_dio2
+  USEMODULE += sx126x_dio3
+endif
+
+USEMODULE += boards_common_adafruit-nrf52-bootloader
+
+include $(RIOTBOARD)/common/nrf52/Makefile.dep
